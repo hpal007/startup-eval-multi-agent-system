@@ -1,0 +1,17 @@
+.venv
+.ruff
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.db
+*.log
+.DS_Store   
+.env
+.env.*
+.vscode/
+.idea/
+*.iml
+*.swp
+*.swo

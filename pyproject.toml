@@ -1,0 +1,186 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "se-system"
+version = "0.1.0"
+description = "A multi-agent system for software engineering tasks with PDF processing capabilities"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "SE System Team", email = "team@se-system.com"},
+]
+maintainers = [
+    {name = "SE System Team", email = "team@se-system.com"},
+]
+keywords = ["agents", "ai", "pdf-processing", "software-engineering"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+requires-python = ">=3.12"
+dependencies = [
+    "google-adk>=1.14.1",
+    "pillow>=11.3.0",
+    "pydantic>=2.11.9",
+    "python-dotenv>=1.1.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-asyncio>=0.23.0",
+    "ruff>=0.13.1",
+    "mypy>=1.8.0",
+    "pre-commit>=3.6.0",
+]
+test = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.0.0", 
+    "pytest-asyncio>=0.23.0",
+]
+lint = [
+    "ruff>=0.13.1",
+    "mypy>=1.8.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/se-system/se-system"
+Documentation = "https://se-system.readthedocs.io"
+Repository = "https://github.com/se-system/se-system.git"
+"Bug Tracker" = "https://github.com/se-system/se-system/issues"
+Changelog = "https://github.com/se-system/se-system/blob/main/CHANGELOG.md"
+
+[project.scripts]
+se-system = "se_system.main:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["agents", "utils", "tools"]
+
+[tool.hatch.version]
+path = "agents/__init__.py"
+
+# Ruff configuration
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+indent-width = 4
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "ARG", # flake8-unused-arguments
+    "COM", # flake8-commas
+    "S",   # flake8-bandit
+    "T20", # flake8-print
+    "SIM", # flake8-simplify
+    "TCH", # flake8-type-checking
+    "RUF", # Ruff-specific rules
+]
+ignore = [
+    "E501",  # line too long, handled by formatter
+    "B008",  # do not perform function calls in argument defaults
+    "S101",  # use of assert detected
+    "T201",  # print found
+    "COM812", # missing trailing comma
+    "COM819", # prohibited trailing comma
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "ARG", "SIM117"]
+"__init__.py" = ["F401"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["agents", "utils"]
+known-third-party = ["google", "pydantic", "dotenv", "PIL"]
+
+[tool.ruff.lint.pyupgrade]
+keep-runtime-typing = true
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+# MyPy configuration
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = [
+    "google.adk.*",
+    "PIL.*",
+]
+ignore_missing_imports = true
+
+# Pytest configuration
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--cov=agents",
+    "--cov=utils",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml",
+]
+testpaths = ["tests"]
+pythonpath = ["."]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]
+
+# Coverage configuration
+[tool.coverage.run]
+source = ["agents", "utils"]
+omit = [
+    "*/tests/*",
+    "*/__pycache__/*",
+    "*/.*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
