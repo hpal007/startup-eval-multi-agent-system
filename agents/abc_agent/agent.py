@@ -1,11 +1,10 @@
-from google.adk.agents.llm_agent import Agent
-from utils.configs import config
 from google.adk.agents.callback_context import CallbackContext
+from google.adk.agents.llm_agent import Agent
 from google.adk.tools import FunctionTool
-import google.genai.types as types
-from utils.helper import list_user_files_py, check_uploaded_pdf
-from tools.file_tool import upload_tool
 
+from tools.file_tool import upload_tool
+from utils.configs import config
+from utils.helper import check_uploaded_pdf, list_user_files_py
 from utils.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -17,7 +16,7 @@ MODEL = config.get_model_for_agent('abc_agent')
 async def before_agent_callback(callback_context: CallbackContext):
     # Example callback logic
     logger.info("Before agent callback executed")
-    
+
     report_bytes = check_uploaded_pdf(callback_context)
 
     if file_path:

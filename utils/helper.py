@@ -1,8 +1,9 @@
-from google.adk.tools.tool_context import ToolContext
-from google.adk.agents.callback_context import CallbackContext
 import google.genai.types as types
+from google.adk.agents.callback_context import CallbackContext
+from google.adk.tools.tool_context import ToolContext
 
 from utils.logging_config import get_logger
+
 logger = get_logger(__name__)
 
 # Check for uploaded PDF in user_content parts
@@ -71,12 +72,12 @@ def files_to_bytes(file_path, file_type="application/pdf"):
     try:
         with open(file_path, "rb") as f:
             data_bytes = f.read()
-        
+
         logger.info(f"Successfully read {len(data_bytes)} bytes from {file_path}")
         data_artifact = types.Part.from_bytes(data=data_bytes, mime_type=file_type)
-        
+
         return data_artifact
-        
+
     except FileNotFoundError:
         logger.error(f"File not found: {file_path}")
         raise

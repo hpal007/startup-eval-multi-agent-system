@@ -1,15 +1,11 @@
-import os
-import asyncio
-import base64
-import io
-from PIL import Image
-from dotenv import load_dotenv
 import argparse
-from google.genai import types
+import asyncio
 
-from google.adk.sessions import InMemorySessionService
-from google.adk.artifacts import InMemoryArtifactService 
+from dotenv import load_dotenv
+from google.adk.artifacts import InMemoryArtifactService
 from google.adk.runners import Runner
+from google.adk.sessions import InMemorySessionService
+from google.genai import types
 
 from agents.abc_agent.agent import root_agent
 
@@ -90,7 +86,7 @@ async def main():
 
     # Session Service for managing conversation history and state
     session_service = InMemorySessionService()
-    artifact_service = InMemoryArtifactService() 
+    artifact_service = InMemoryArtifactService()
 
     # Runner for orchestrating the agent execution
     runner = Runner(

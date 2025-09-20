@@ -109,26 +109,26 @@ def get_logger(name: str) -> logging.Logger:
 # def log_callback_event(event_type: str, agent_name: str, agent_type: str = "agent", workflow_id: str = None):
 #     """
 #     Create a callback function that logs agent events with structured information.
-    
+
 #     Args:
 #         event_type: Type of event ('starting', 'completed', 'failed')
 #         agent_name: Name of the agent
 #         agent_type: Type of agent ('agent', 'workflow', 'tool')
 #         workflow_id: Optional workflow ID for context injection
-    
+
 #     Returns:
 #         Callback function with workflow context support
 #     """
 #     def callback(callback_context, **kwargs):
 #         # Get logger for this function
 #         logger = get_logger(f"callback.{agent_name}")
-        
+
 #         # Inject workflow context for unified storage
 #         inject_workflow_context(callback_context, workflow_id, agent_name)
-        
+
 #         emoji_map = {
 #             ('starting', 'agent'): '🤖',
-#             ('starting', 'workflow'): '👑', 
+#             ('starting', 'workflow'): '👑',
 #             ('starting', 'tool'): '🔧',
 #             ('completed', 'agent'): '✅',
 #             ('completed', 'workflow'): '🏁',
@@ -137,11 +137,11 @@ def get_logger(name: str) -> logging.Logger:
 #             ('failed', 'workflow'): '💥',
 #             ('failed', 'tool'): '🚨'
 #         }
-        
+
 #         emoji = emoji_map.get((event_type, agent_type), '📋')
-        
+
 #         context_info = f" (workflow: {workflow_id})" if workflow_id else ""
-        
+
 #         if event_type == 'starting':
 #             logger.info(f"\n{emoji} {agent_name}: {event_type.title()} {agent_type} execution{context_info}\n")
 #         elif event_type == 'completed':
@@ -150,7 +150,7 @@ def get_logger(name: str) -> logging.Logger:
 #             logger.info(f"\n{emoji} {agent_name}: {event_type.title()} {agent_type} execution with errors{context_info}\n")
 #         else:
 #             logger.info(f"\n{emoji} {agent_name}: {event_type} - {agent_type}{context_info}\n")
-            
+
 #     return callback
 # def configure_competitor_logging() -> None:
 #     """
@@ -160,26 +160,26 @@ def get_logger(name: str) -> logging.Logger:
 #     # Configure competitor analysis specific loggers
 #     competitor_agents = [
 #         "competitor_extractor",
-#         "market_researcher", 
+#         "market_researcher",
 #         "competitor_intelligence",
 #         "competitive_analysis",
 #         "report_synthesis",
 #         "competitor_profile_orchestrator"
 #     ]
-    
+
 #     for agent_name in competitor_agents:
 #         logger = logging.getLogger(f"agents.{agent_name}")
 #         # Competitor agents may need more detailed logging for research activities
 #         logger.setLevel(logging.INFO)
-    
+
 #     # Configure workflow orchestrator logger
 #     orchestrator_logger = logging.getLogger("workflow.competitor_profile_orchestrator")
 #     orchestrator_logger.setLevel(logging.INFO)
-    
+
 #     # Configure search and research activity loggers
 #     search_logger = logging.getLogger("competitor.search")
 #     search_logger.setLevel(logging.INFO)
-    
+
 #     research_logger = logging.getLogger("competitor.research")
 #     research_logger.setLevel(logging.INFO)
 
@@ -194,7 +194,7 @@ def get_logger(name: str) -> logging.Logger:
 #         search_terms: Search terms used for discovery
 #     """
 #     logger = get_logger(f"agents.{agent_name}")
-    
+
 #     message = f"Discovered {discovered_count} competitors using terms: {', '.join(search_terms)}"
 #     logger.info(message)
 
@@ -210,7 +210,7 @@ def get_logger(name: str) -> logging.Logger:
 #         result: Analysis result summary
 #     """
 #     logger = get_logger(f"agents.{agent_name}")
-    
+
 #     message = f"{analysis_type} for '{competitor_name}': {result}"
 #     logger.info(message)
 
@@ -226,7 +226,7 @@ def get_logger(name: str) -> logging.Logger:
 #         duration: Search duration in seconds
 #     """
 #     logger = get_logger("competitor.search")
-    
+
 #     message = f"{search_type} search: '{query}' -> {results_count} results ({duration:.2f}s)"
 #     logger.info(message)
 
@@ -242,7 +242,7 @@ def get_logger(name: str) -> logging.Logger:
 #         confidence: Confidence score (0.0 to 1.0)
 #     """
 #     logger = get_logger(f"agents.{agent_name}")
-    
+
 #     message = f"Validation: '{claim}' -> {validation_status} (confidence: {confidence:.2f})"
 #     logger.info(message)
 
@@ -257,9 +257,9 @@ def get_logger(name: str) -> logging.Logger:
 #         progress_percent: Optional progress percentage
 #     """
 #     logger = get_logger("workflow.competitor_profile_orchestrator")
-    
+
 #     message = f"Stage: {stage} - {details}"
 #     if progress_percent is not None:
 #         message += f" ({progress_percent}% complete)"
-    
+
 #     logger.info(message)

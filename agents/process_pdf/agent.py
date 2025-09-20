@@ -8,8 +8,8 @@ Uses PyMuPDF for page-by-page text extraction and outputs structured JSON format
 from google.adk.agents import Agent
 from google.adk.tools import FunctionTool
 from google.adk.tools.agent_tool import AgentTool
-
 from google.genai import types
+
 from utils.configs import config
 
 MODEL = config.get_model_for_agent('process_pdf')
@@ -38,4 +38,4 @@ process_pdf = Agent(
     ),
     include_contents="default",
     output_key="process_pdf_output",
-)   
+)
