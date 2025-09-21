@@ -1,12 +1,12 @@
 # from google.adk.agents.llm_agent import Agent
-from google.adk.agents import Agent, SequentialAgent
+from google.adk.agents import Agent, SequentialAgent, ParallelAgent
 from google.adk.agents.callback_context import CallbackContext
 from google.adk.tools import FunctionTool
 
 from agents.process_pdf.agent import create_pdf_processor_agent
 from tools.file_tool import upload_tool
 from utils.configs import config
-from utils.helper import check_uploaded_pdf, create_session_dir, list_user_files_py
+from utils.helper import check_uploaded_pdf, create_session_dir, get_session_dir, list_user_files_py, save_state_to_file
 from utils.logging_config import get_logger
 from workflow.business_kpis_orchestrator.agent import (
     create_business_kpis_orchestrator,
@@ -56,6 +56,27 @@ async def before_agent_callback(callback_context: CallbackContext):
 def after_agent_callback(callback_context: CallbackContext):
     logger.info(f"After agent callback executed {callback_context.invocation_id}")
 
+    # Save any final state or results
+    try:
+        if callback_context.state:
+            save_state_to_file(
+                context=callback_context,
+                session_path=get_session_dir(callback_context),
+                filename="all_states_report",
+                file_type="json",
+            )
+    except Exception as e:
+        logger.error(f"❌ Error saving state in after_agent_callback: {e}")
+
+evaluation_parallel = ParallelAgent(
+    name="evaluation_parallel",
+    description="Parallel evaluation of founders, competitors, and business KPIs",
+    sub_agents=[
+        create_founder_profile_orchestrator(),  # Analyze founders and generate team report
+        create_business_kpis_orchestrator(),  # Validate business KPIs and frameworks
+        create_competitor_profile_orchestrator(),  # Analyze competitors and market positioning
+    ],
+)
 
 # Main founder evaluation pipeline
 startup_evaluation_pipeline = SequentialAgent(
@@ -63,12 +84,9 @@ startup_evaluation_pipeline = SequentialAgent(
     description="Processes startup pitch documents and generates comprehensive founder team evaluations",
     sub_agents=[
         create_pdf_processor_agent(),  # Extract and process pitch deck content
-        create_founder_profile_orchestrator(),  # Analyze founders and generate team report
-        create_competitor_profile_orchestrator(),  # Analyze competitors and market positioning
-        create_business_kpis_orchestrator(),  # Validate business KPIs and frameworks
+        evaluation_parallel,  # Parallel evaluation of founders, competitors, and business KPIs
     ],
 )
-
 
 root_agent = Agent(
     model=MODEL,

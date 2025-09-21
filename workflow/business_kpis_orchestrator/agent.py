@@ -662,12 +662,13 @@ def create_business_kpis_orchestrator():
             "Coordinates industry classification, market size validation, KPI benchmarking, and comprehensive reporting."
         ),
         instruction=prompt.BUSINESS_KPIS_ORCHESTRATOR_INSTRUCTION,
-        planner=PlanReActPlanner(),
+        # planner=PlanReActPlanner(),
         sub_agents=[create_business_kpi_analysis_pipeline()],
         before_agent_callback=setup_business_kpis_orchestrator_callback,
-        generate_content_config=types.GenerateContentConfig(
-            temperature=config.TEMPERATURE,
-        ),
+        output_key="synthesized_kpi_report",
+        # generate_content_config=types.GenerateContentConfig(
+        #     temperature=config.TEMPERATURE,
+        # ),
         include_contents="default",
     )
 

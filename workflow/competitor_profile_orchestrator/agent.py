@@ -19,7 +19,7 @@ from agents.competitor_intelligence.agent import create_competitor_intelligence_
 from agents.market_researcher.agent import create_market_researcher_agent
 from agents.report_synthesis.agent import report_synthesis_agent
 from utils.configs import config
-from utils.helper import get_session_dir, save_llm_response_to_file
+from utils.helper import get_session_dir, save_llm_response_to_file, save_state_to_file
 
 from . import prompt
 
@@ -37,9 +37,9 @@ def setup_orchestrator_callback(callback_context, **kwargs):
 
 
 def synthesis_callback(callback_context: CallbackContext, llm_response: LlmResponse | None = None, **kwargs):
-    """Callback to synthesize results from all founder analyses."""
+    """Callback to synthesize results from all competitor analyses."""
     logger.info(
-        "\n🤖 founder_report_synthesizer: Synthesizing verification results from all founders\n"
+        "\n🤖 competitor_report_synthesizer: Synthesizing verification results from all competitors\n"
     )
     try:
         if not llm_response:
@@ -47,7 +47,7 @@ def synthesis_callback(callback_context: CallbackContext, llm_response: LlmRespo
             return
         if llm_response.content and llm_response.content.parts:
             save_llm_response_to_file(
-                filename="founder_verification_report",
+                filename="competitor_verification_report",
                 llm_content=llm_response.content,
                 session_path=get_session_dir(callback_context),
                 file_type="md",
@@ -56,6 +56,19 @@ def synthesis_callback(callback_context: CallbackContext, llm_response: LlmRespo
             logger.warning("⚠️ No content in LlmResponse to save in synthesis_callback.")
     except Exception as e:
         logger.error(f"❌ Error saving LLM response in synthesis_callback: {e}")
+
+    
+    try:
+        if callback_context.state:
+            save_state_to_file(
+                context=callback_context,
+                session_path=get_session_dir(callback_context),
+                filename="competitor_verification_report",
+                file_type="json",
+            )
+    except Exception as e:
+        logger.error(f"❌ Error saving state in synthesis_callback: {e}")
+
 
 
 def analysis_pipeline_callback(callback_context: CallbackContext, **kwargs):
@@ -111,22 +124,22 @@ def intelligence_gathering_progress_callback(callback_context, **kwargs):
     )
 
 
-def create_competitor_discovery_pipeline():
-    """Create a fresh instance of the competitor discovery pipeline."""
-    return SequentialAgent(
-        name="competitor_discovery_pipeline",
-        description="Sequential pipeline for comprehensive competitor discovery: extraction → research → intelligence",
-        sub_agents=[
-            create_competitor_extractor_agent(),  # Stage 1: Extract mentioned competitors
-            create_market_researcher_agent(),  # Stage 2: Discover unlisted competitors
-            create_competitor_intelligence_agent(),  # Stage 3: Gather detailed intelligence
-        ],
-        before_agent_callback=competitor_discovery_pipeline_callback,
-    )
+# def create_competitor_discovery_pipeline():
+#     """Create a fresh instance of the competitor discovery pipeline."""
+#     return SequentialAgent(
+#         name="competitor_discovery_pipeline",
+#         description="Sequential pipeline for comprehensive competitor discovery: extraction → research → intelligence",
+#         sub_agents=[
+#             create_competitor_extractor_agent(),  # Stage 1: Extract mentioned competitors
+#             create_market_researcher_agent(),  # Stage 2: Discover unlisted competitors
+#             create_competitor_intelligence_agent(),  # Stage 3: Gather detailed intelligence
+#         ],
+#         before_agent_callback=competitor_discovery_pipeline_callback,
+#     )
 
 
 # Competitor Discovery Pipeline - Sequential execution of discovery agents
-competitor_discovery_pipeline = create_competitor_discovery_pipeline()
+# competitor_discovery_pipeline = create_competitor_discovery_pipeline()
 
 
 def create_competitive_analysis_pipeline_agent():
@@ -190,7 +203,9 @@ def create_competitor_evaluation_pipeline():
         name="competitor_evaluation_pipeline",
         description="Complete competitor analysis workflow: discovery → analysis → synthesis",
         sub_agents=[
-            create_competitor_discovery_pipeline(),  # First discover and profile competitors
+            create_competitor_extractor_agent(),  # Stage 1: Extract mentioned competitors
+            create_market_researcher_agent(),  # Stage 2: Discover unlisted competitors
+            create_competitor_intelligence_agent(),  # Stage 3: Gather detailed intelligence
             create_analysis_synthesis_pipeline(),  # Then analyze and synthesize results
         ],
     )
@@ -211,13 +226,14 @@ def create_competitor_profile_orchestrator():
             "competitive analysis, and comprehensive reporting for investment decision-making."
         ),
         instruction=prompt.ORCHESTRATOR_INSTRUCTION,
-        planner=PlanReActPlanner(),
+        # planner=PlanReActPlanner(),
         sub_agents=[create_competitor_evaluation_pipeline()],
         before_agent_callback=setup_orchestrator_callback,
-        # after_agent_callback=synthesis_callback,
-        generate_content_config=types.GenerateContentConfig(
-            temperature=config.TEMPERATURE,
-        ),
+        after_agent_callback=synthesis_callback,
+        output_key="synthesized_competitor_report",
+        # generate_content_config=types.GenerateContentConfig(
+        #     temperature=config.TEMPERATURE,
+        # ),
         include_contents="default",
     )
 

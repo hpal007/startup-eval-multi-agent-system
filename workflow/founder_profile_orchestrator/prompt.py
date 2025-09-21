@@ -4,13 +4,85 @@ Prompts for the Founder Profile Orchestrator Agent
 
 QUERY_GENERATOR_INSTRUCTION = """Generate effective search queries combining founder names with their professional claims for comprehensive verification.
 
+## Input Data Source
+Extract team and founder information from the structured JSON data in {pdf_processor_agent_output}, specifically from the "team" section which contains:
+- founders: Array of founder objects with name, title, bio, linkedin
+- key_team_members: Array of key team members with name, title, bio, linkedin
+- advisors: Array of advisors with name, bio, linkedin
+
+## Query Generation Process
+
+### 1. Founder Information Extraction
+- Parse the "team" section from the input JSON
+- Extract founder names, titles, and biographical information
+- Identify key professional claims from bios and titles
+- Note any LinkedIn profiles or contact information
+
+### 2. Claim Identification
+- Extract educational credentials mentioned in bios
+- Identify professional experience and company names
+- Note industry expertise and achievements
+- Capture any awards, recognitions, or notable accomplishments
+
+### 3. Query Strategy
 Focus on India-specific verification patterns:
-- IIT/IIM educational credentials
-- Indian startup ecosystem presence (YourStory, Inc42, Economic Times)
-- Indian corporate experience (Flipkart, Paytm, TCS, Infosys, etc.)
-- Government recognition (Startup India, Digital India)
+- IIT/IIM educational credentials and their verification
+- Indian startup ecosystem presence (YourStory, Inc42, Economic Times, VCCircle)
+- Indian corporate experience (Flipkart, Paytm, TCS, Infosys, Reliance, Tata, etc.)
+- Government recognition (Startup India, Digital India, Make in India)
 - Indian media coverage and thought leadership
-- Professional networks (TiE, NASSCOM)
+- Professional networks (TiE, NASSCOM, IAMAI, FICCI)
+- Angel/VC investments and exits
+- Industry awards and recognitions
+
+### 4. Query Types to Generate
+
+#### General Verification Queries:
+- "[Founder Name] [Company/Title] verification"
+- "[Founder Name] LinkedIn profile"
+- "[Founder Name] professional background"
+- "[Founder Name] education [University]"
+
+#### India-Specific Queries:
+- "[Founder Name] IIT [branch/year]"
+- "[Founder Name] IIM [program/year]"
+- "[Founder Name] YourStory profile"
+- "[Founder Name] Inc42 coverage"
+- "[Founder Name] Economic Times mention"
+- "[Founder Name] TiE member"
+- "[Founder Name] NASSCOM"
+- "[Founder Name] Startup India recognition"
+- "[Founder Name] [Indian Company] experience"
+
+#### Professional Network Queries:
+- "[Founder Name] angel investor"
+- "[Founder Name] startup mentor"
+- "[Founder Name] industry expert"
+- "[Founder Name] thought leader"
+
+#### Media Coverage Queries:
+- "[Founder Name] interview"
+- "[Founder Name] startup story"
+- "[Founder Name] business news"
+- "[Founder Name] entrepreneur profile"
+
+### 5. Query Optimization
+- Combine founder names with specific claims for targeted searches
+- Use exact company names and educational institutions
+- Include location qualifiers (India, Mumbai, Bangalore, Delhi) when relevant
+- Generate multiple query variations for comprehensive coverage
+- Prioritize queries based on the significance of claims
+
+### 6. Output Format
+Generate queries in JSON format:
+{
+  "founder_name": {
+    "general_queries": ["query1", "query2", ...],
+    "india_specific_queries": ["query1", "query2", ...],
+    "professional_network_queries": ["query1", "query2", ...],
+    "media_coverage_queries": ["query1", "query2", ...]
+  }
+}
 
 Create both general and India-specific queries for thorough founder verification."""
 

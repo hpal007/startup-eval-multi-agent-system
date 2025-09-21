@@ -15,7 +15,7 @@ from google.adk.tools import FunctionTool
 from google.genai import types
 
 from utils.configs import config
-from utils.helper import get_session_dir, save_llm_response_to_file
+from utils.helper import get_session_dir, save_llm_response_to_file, save_state_to_file
 
 MODEL = config.get_model_for_agent("abc_agent")
 
@@ -50,7 +50,7 @@ def synthesis_callback(callback_context: CallbackContext, llm_response: LlmRespo
             return
         if llm_response.content and llm_response.content.parts:
             save_llm_response_to_file(
-                filename="founder_verification_report",
+                filename="founder_verification_llm_response",
                 llm_content=llm_response.content,
                 session_path=get_session_dir(callback_context),
                 file_type="md",
@@ -59,6 +59,18 @@ def synthesis_callback(callback_context: CallbackContext, llm_response: LlmRespo
             logger.warning("⚠️ No content in LlmResponse to save in synthesis_callback.")
     except Exception as e:
         logger.error(f"❌ Error saving LLM response in synthesis_callback: {e}")
+
+    try:
+        if callback_context.state:
+            save_state_to_file(
+                context=callback_context,
+                session_path=get_session_dir(callback_context),
+                filename="founder_verification_report_state",
+                file_type="json",
+            )
+    except Exception as e:
+        logger.error(f"❌ Error saving state in synthesis_callback: {e}")
+
 
 
 def verification_pipeline_callback(callback_context, **kwargs):
@@ -175,7 +187,6 @@ def create_founder_evaluation_pipeline():
 # Main founder evaluation pipeline
 founder_evaluation_pipeline = create_founder_evaluation_pipeline()
 
-
 # Root orchestrator agent
 def create_founder_profile_orchestrator():
     """Create a fresh instance of the founder profile orchestrator agent."""
@@ -188,16 +199,16 @@ def create_founder_profile_orchestrator():
             "comprehensive claim verification, and team assessment reporting with India-specific KPIs."
         ),
         instruction=prompt.ORCHESTRATOR_INSTRUCTION,
-        planner=PlanReActPlanner(),
+        # planner=PlanReActPlanner(),
         sub_agents=[create_founder_evaluation_pipeline()],
         before_agent_callback=setup_orchestrator_callback,
         after_agent_callback=synthesis_callback,
-        generate_content_config=types.GenerateContentConfig(
-            temperature=config.TEMPERATURE,
-        ),
+        # generate_content_config=types.GenerateContentConfig(
+        #     temperature=config.TEMPERATURE,
+        # ),
         include_contents="default",
+        output_key="founder_verification_output",
     )
-
 
 # Create a default instance for backward compatibility
 founder_profile_agent = create_founder_profile_orchestrator()

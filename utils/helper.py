@@ -206,7 +206,6 @@ def save_state_to_file(
         # Get all state data
         logger.info(f"Saving state data to files in session path: {context.state}")
         state_data = dict(context.state.to_dict())
-        logger.info(f"Dict data to files in session path: {state_data}")
 
         for key, value in state_data.items():
             logger.info(f"State key: {key}, Value type: {type(value)}")
