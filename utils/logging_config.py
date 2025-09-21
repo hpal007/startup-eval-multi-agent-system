@@ -74,6 +74,44 @@ def get_logger(name: str) -> logging.Logger:
     """
     return logging.getLogger(name)
 
+def log_callback_event(event_type: str, agent_name: str, agent_type: str = "agent", workflow_id: str = None):
+    """
+    Create a callback function that logs agent events with structured information.
+
+    Args:
+        event_type: Type of event ('starting', 'completed', 'failed')
+        agent_name: Name of the agent
+        agent_type: Type of agent ('agent', 'workflow', 'tool')
+        workflow_id: Optional workflow ID for context injection
+
+    """
+    logger = get_logger(f"agents.{agent_name}")
+    emoji_map = {
+            ('starting', 'agent'): '🤖',
+            ('starting', 'workflow'): '👑',
+            ('starting', 'tool'): '🔧',
+            ('completed', 'agent'): '✅',
+            ('completed', 'workflow'): '🏁',
+            ('completed', 'tool'): '✅',
+            ('failed', 'agent'): '❌',
+            ('failed', 'workflow'): '💥',
+            ('failed', 'tool'): '🚨'
+        }
+
+    emoji = emoji_map.get((event_type, agent_type), '📋')
+
+    context_info = f" (workflow: {workflow_id})" if workflow_id else ""
+
+    if event_type == 'starting':
+            logger.info(f"\n{emoji} {agent_name}: {event_type.title()} {agent_type} execution{context_info}\n")
+    elif event_type == 'completed':
+            logger.info(f"\n{emoji} {agent_name}: {event_type.title()} {agent_type} execution successfully{context_info}\n")
+    elif event_type == 'failed':
+            logger.info(f"\n{emoji} {agent_name}: {event_type.title()} {agent_type} execution with errors{context_info}\n")
+    else:
+            logger.info(f"\n{emoji} {agent_name}: {event_type} - {agent_type}{context_info}\n")
+
+
 
 # def log_error(component: str, error: Exception, context: str | None = None):
 #     """
@@ -92,66 +130,8 @@ def get_logger(name: str) -> logging.Logger:
 
 #     logger.error(message, exc_info=True)
 
-# def inject_workflow_context(callback_context, workflow_id: str = None, agent_name: str = None):
-#     """Inject workflow context into callback context for unified storage."""
-#     # Use setattr to safely set attributes on callback_context
-#     # This avoids issues with read-only properties
-#     try:
-#         if workflow_id:
-#             setattr(callback_context, 'workflow_id', workflow_id)
-#         if agent_name:
-#             setattr(callback_context, 'agent_name', agent_name)
-#     except (AttributeError, TypeError):
-#         # If we can't set the attributes, that's okay - we'll use defaults
-#         pass
-#     return callback_context
 
-# def log_callback_event(event_type: str, agent_name: str, agent_type: str = "agent", workflow_id: str = None):
-#     """
-#     Create a callback function that logs agent events with structured information.
 
-#     Args:
-#         event_type: Type of event ('starting', 'completed', 'failed')
-#         agent_name: Name of the agent
-#         agent_type: Type of agent ('agent', 'workflow', 'tool')
-#         workflow_id: Optional workflow ID for context injection
-
-#     Returns:
-#         Callback function with workflow context support
-#     """
-#     def callback(callback_context, **kwargs):
-#         # Get logger for this function
-#         logger = get_logger(f"callback.{agent_name}")
-
-#         # Inject workflow context for unified storage
-#         inject_workflow_context(callback_context, workflow_id, agent_name)
-
-#         emoji_map = {
-#             ('starting', 'agent'): '🤖',
-#             ('starting', 'workflow'): '👑',
-#             ('starting', 'tool'): '🔧',
-#             ('completed', 'agent'): '✅',
-#             ('completed', 'workflow'): '🏁',
-#             ('completed', 'tool'): '✅',
-#             ('failed', 'agent'): '❌',
-#             ('failed', 'workflow'): '💥',
-#             ('failed', 'tool'): '🚨'
-#         }
-
-#         emoji = emoji_map.get((event_type, agent_type), '📋')
-
-#         context_info = f" (workflow: {workflow_id})" if workflow_id else ""
-
-#         if event_type == 'starting':
-#             logger.info(f"\n{emoji} {agent_name}: {event_type.title()} {agent_type} execution{context_info}\n")
-#         elif event_type == 'completed':
-#             logger.info(f"\n{emoji} {agent_name}: {event_type.title()} {agent_type} execution successfully{context_info}\n")
-#         elif event_type == 'failed':
-#             logger.info(f"\n{emoji} {agent_name}: {event_type.title()} {agent_type} execution with errors{context_info}\n")
-#         else:
-#             logger.info(f"\n{emoji} {agent_name}: {event_type} - {agent_type}{context_info}\n")
-
-#     return callback
 # def configure_competitor_logging() -> None:
 #     """
 #     Configure logging specifically for competitor analysis workflow.

@@ -1,3 +1,6 @@
+import os
+from pathlib import Path
+
 import google.genai.types as types
 from google.adk.agents.callback_context import CallbackContext
 from google.adk.tools.tool_context import ToolContext
@@ -6,12 +9,17 @@ from utils.logging_config import get_logger
 
 logger = get_logger(__name__)
 
+
 # Check for uploaded PDF in user_content parts
 def check_uploaded_pdf(callback_context: CallbackContext):
     report_bytes = None
     if hasattr(callback_context, "user_content"):
-        logger.info(f"User content available with {len(callback_context.user_content.parts) if callback_context.user_content and hasattr(callback_context.user_content, 'parts') else 0} parts.")
-        if callback_context.user_content and hasattr(callback_context.user_content, "parts"):
+        logger.info(
+            f"User content available with {len(callback_context.user_content.parts) if callback_context.user_content and hasattr(callback_context.user_content, 'parts') else 0} parts."
+        )
+        if callback_context.user_content and hasattr(
+            callback_context.user_content, "parts"
+        ):
             for i, part in enumerate(callback_context.user_content.parts):
                 if (
                     hasattr(part, "inline_data")
@@ -24,16 +32,19 @@ def check_uploaded_pdf(callback_context: CallbackContext):
 
         # Check contents attribute as backup
     if hasattr(callback_context, "contents") and callback_context.contents:
-            logger.info(f"Contents available with {len(callback_context.contents) if callback_context.contents else 0} items.")
-            for content in callback_context.contents:
-                if (
-                    hasattr(content, "mime_type")
-                    and content.mime_type == "application/pdf"
-                    and hasattr(content, "data")
-                ):
-                    logger.info("✅ Found uploaded PDF in contents")
-                    report_bytes = content.data
+        logger.info(
+            f"Contents available with {len(callback_context.contents) if callback_context.contents else 0} items."
+        )
+        for content in callback_context.contents:
+            if (
+                hasattr(content, "mime_type")
+                and content.mime_type == "application/pdf"
+                and hasattr(content, "data")
+            ):
+                logger.info("✅ Found uploaded PDF in contents")
+                report_bytes = content.data
     return report_bytes
+
 
 # Check for uploaded PDF in artifacts in tools
 async def list_user_files_py(tool_context: ToolContext) -> str:
@@ -52,18 +63,19 @@ async def list_user_files_py(tool_context: ToolContext) -> str:
         print(f"An unexpected error occurred during Python artifact list: {e}")
         return "Error: An unexpected error occurred while listing Python artifacts."
 
+
 # Convert a file to bytes and return as a types.Part artifact object
 def files_to_bytes(file_path, file_type="application/pdf"):
     """
     Convert a file to bytes and return as a types.Part object.
-    
+
     Args:
         file_path (str): Path to the file to convert
         file_type (str): MIME type of the file (default: "application/pdf")
-        
+
     Returns:
         types.Part: Part object containing the file data
-        
+
     Raises:
         FileNotFoundError: If the file doesn't exist
         PermissionError: If unable to read the file
@@ -87,4 +99,24 @@ def files_to_bytes(file_path, file_type="application/pdf"):
     except Exception as e:
         logger.error(f"Error reading file {file_path}: {e}")
         raise
+
+def create_session_dir(session_id, user_id, app_name, base_dir="sessions"):
+    project_root = Path(__file__).parent.parent
+    session_dir = os.path.join(project_root, base_dir, f"{user_id}_{session_id}_{app_name}")
+
+    # Check if path already exists and return if it does
+    if os.path.exists(session_dir):
+        logger.info(f"Session directory already exists: {session_dir}")
+        return session_dir
+
+    # Create directory if it doesn't exist
+    try:
+        os.makedirs(session_dir, exist_ok=True)
+        logger.info(f"Session directory created: {session_dir}")
+    except Exception as e:
+        logger.error(f"Error creating session directory {session_dir}: {e}")
+        raise
+    return session_dir
+
+
 

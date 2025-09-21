@@ -31,6 +31,7 @@ dependencies = [
     "google-adk>=1.14.1",
     "pillow>=11.3.0",
     "pydantic>=2.11.9",
+    "pymupdf>=1.26.4",
     "python-dotenv>=1.1.1",
 ]
 
@@ -64,7 +65,7 @@ Changelog = "https://github.com/se-system/se-system/blob/main/CHANGELOG.md"
 se-system = "se_system.main:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["agents", "utils", "tools"]
+packages = ["agents", "utils", "tools", "workflow"]
 
 [tool.hatch.version]
 path = "agents/__init__.py"
@@ -106,7 +107,7 @@ ignore = [
 "__init__.py" = ["F401"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["agents", "utils"]
+known-first-party = ["agents", "utils", "tools", "workflow"]
 known-third-party = ["google", "pydantic", "dotenv", "PIL"]
 
 [tool.ruff.lint.pyupgrade]

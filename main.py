@@ -7,7 +7,7 @@ from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.genai import types
 
-from agents.abc_agent.agent import root_agent
+from workflow.master.agent import root_agent
 
 # Load environment variables from .env file
 load_dotenv()
@@ -16,43 +16,44 @@ APP_NAME = "chatgpt_agentic_clone_app"
 USER_ID = "user_1"
 SESSION_ID = "session_001"
 
+
 async def call_agent_async(query: str, runner, user_id, session_id):
-  """Sends a query to the agent and prints the final response."""
+    """Sends a query to the agent and prints the final response."""
+    print(f"\n>>> User Query: {query}")
 
-  print(f"\n>>> User Query: {query}")
+    # Prepare the user's message in ADK format
+    content = types.Content(role="user", parts=[types.Part(text=query)])
 
-  # Prepare the user's message in ADK format
-  content = types.Content(role='user', parts=[types.Part(text=query)])
+    final_response_text = "Agent did not produce a final response."  # Default
 
-  final_response_text = "Agent did not produce a final response." # Default
+    # Key Concept: run_async executes the agent logic and yields Events.
+    # We iterate through events to find the final answer.
+    async for event in runner.run_async(
+        user_id=user_id, session_id=session_id, new_message=content
+    ):
+        # You can uncomment the line below to see *all* events during execution
+        # print(f"  [Event] Author: {event.author}, Type: {type(event).__name__}, Final: {event.is_final_response()}, Content: {event.content}")
 
-  # Key Concept: run_async executes the agent logic and yields Events.
-  # We iterate through events to find the final answer.
-  async for event in runner.run_async(user_id=user_id, session_id=session_id, new_message=content):
-      # You can uncomment the line below to see *all* events during execution
-      # print(f"  [Event] Author: {event.author}, Type: {type(event).__name__}, Final: {event.is_final_response()}, Content: {event.content}")
+        # Key Concept: is_final_response() marks the concluding message for the turn.
+        if event.is_final_response():
+            if event.content and event.content.parts:
+                # Assuming text response in the first part
+                final_response_text = event.content.parts[0].text
+            elif (
+                event.actions and event.actions.escalate
+            ):  # Handle potential errors/escalations
+                final_response_text = (
+                    f"Agent escalated: {event.error_message or 'No specific message.'}"
+                )
+            # Add more checks here if needed (e.g., specific error codes)
+            break  # Stop processing events once the final response is found
 
-      # Key Concept: is_final_response() marks the concluding message for the turn.
-      if event.is_final_response():
-          if event.content and event.content.parts:
-             # Assuming text response in the first part
-             final_response_text = event.content.parts[0].text
-          elif event.actions and event.actions.escalate: # Handle potential errors/escalations
-             final_response_text = f"Agent escalated: {event.error_message or 'No specific message.'}"
-          # Add more checks here if needed (e.g., specific error codes)
-          break # Stop processing events once the final response is found
+    print(f"<<< Agent Response: {final_response_text}")
 
-  print(f"<<< Agent Response: {final_response_text}")
 
 async def interactive_session(runner, user_id, session_id):
     """Run an interactive session with the agent."""
     print("Type 'exit' or 'quit' to end the session.")
-    print("Example commands:")
-    print(" - General knowledge: 'Who was Marie Curie?', 'How does photosynthesis work?'")
-    print(" - Current info: 'What's the weather in London right now?', 'Latest news about AI'")
-    print(" - Web extraction: 'Extract content from https://example.com'")
-    print(" - Research: 'Do deep research on quantum computing advances'")
-    print(" - Image: 'Generate an image of a cat playing piano'")
     print("========================================")
 
     while True:
@@ -69,6 +70,7 @@ async def interactive_session(runner, user_id, session_id):
             break
         except Exception as e:
             print(f"Error: {e}")
+
 
 async def main():
     parser = argparse.ArgumentParser(description="Run the ChatGPT-like Agentic Clone")
@@ -90,7 +92,10 @@ async def main():
 
     # Runner for orchestrating the agent execution
     runner = Runner(
-        agent=root_agent, app_name=APP_NAME, session_service=session_service, artifact_service=artifact_service
+        agent=root_agent,
+        app_name=APP_NAME,
+        session_service=session_service,
+        artifact_service=artifact_service,
     )
     print(f"Runner created for agent '{runner.agent.name}'.")
 
@@ -98,7 +103,9 @@ async def main():
         session = await session_service.create_session(
             app_name=APP_NAME, user_id=args.user_id, session_id=args.session_id
         )
-        print(f"Session created: App='{APP_NAME}', User='{args.user_id}', Session='{args.session_id}'")
+        print(
+            f"Session created: App='{APP_NAME}', User='{args.user_id}', Session='{args.session_id}'"
+        )
     except Exception as e:
         print(f"Warning: Could not create session: {e}")
         print("Session will be created automatically during first interaction.")
@@ -114,4 +121,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-
