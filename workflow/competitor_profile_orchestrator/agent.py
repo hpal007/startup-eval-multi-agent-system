@@ -8,10 +8,8 @@ It orchestrates competitor extraction, market research, intelligence gathering, 
 import logging
 
 from google.adk.agents import Agent, SequentialAgent
-from google.adk.models import LlmResponse
-from google.adk.planners import PlanReActPlanner
 from google.adk.agents.callback_context import CallbackContext
-from google.genai import types
+from google.adk.models import LlmResponse
 
 from agents.competitive_analysis.agent import competitive_analysis_agent
 from agents.competitor_extractor.agent import create_competitor_extractor_agent
@@ -57,7 +55,7 @@ def synthesis_callback(callback_context: CallbackContext, llm_response: LlmRespo
     except Exception as e:
         logger.error(f"❌ Error saving LLM response in synthesis_callback: {e}")
 
-    
+
     try:
         if callback_context.state:
             save_state_to_file(

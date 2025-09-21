@@ -1,21 +1,22 @@
 """Tools for KPI framework selection and customization."""
 
-from typing import Dict, List, Any, Optional
-from utils.models import (
-    IndustryClassification, 
-    GrowthStage, 
-    KPIFramework, 
-    KPIDefinition,
-    ValidationStatus
-)
+from typing import Any
+
 from agents.kpi_framework_selector.prompt import KPI_FRAMEWORK_DATABASE
+from utils.models import (
+    GrowthStage,
+    IndustryClassification,
+    KPIDefinition,
+    KPIFramework,
+    ValidationStatus,
+)
 
 
 def select_kpi_framework(
     industry_classification: IndustryClassification,
     growth_stage: GrowthStage,
     business_model: str,
-    current_kpis: Dict[str, Any]
+    current_kpis: dict[str, Any]
 ) -> KPIFramework:
     """
     Select and customize appropriate KPI framework based on industry classification,
@@ -33,20 +34,20 @@ def select_kpi_framework(
     # Get base framework from database
     primary_industry = industry_classification.primary_industry.lower()
     base_framework = _get_base_framework(primary_industry)
-    
+
     if not base_framework:
         # Fallback to generic framework if industry not found
         base_framework = _create_generic_framework(primary_industry)
-    
+
     # Customize framework based on growth stage and business model
     customized_framework = _customize_framework_for_growth_stage(
         base_framework, growth_stage
     )
-    
+
     customized_framework = _customize_framework_for_business_model(
         customized_framework, business_model
     )
-    
+
     # Filter and prioritize KPIs based on available data
     customized_framework = _prioritize_kpis_by_availability(
         customized_framework, current_kpis
@@ -75,25 +76,25 @@ def select_kpi_framework(
                 for idx, kpi in enumerate(customized_framework["primary_kpis"]):
                     kpi["importance_weight"] = max(0.0, kpi["importance_weight"] + sign * epsilon * (idx + 1) / n)
                 _normalize_kpi_weights(customized_framework["primary_kpis"])
-    
+
     return customized_framework
 
 
-def _get_base_framework(industry: str) -> Optional[Dict[str, Any]]:
+def _get_base_framework(industry: str) -> dict[str, Any] | None:
     """Get base KPI framework from database."""
     # Try exact match first
     if industry in KPI_FRAMEWORK_DATABASE:
         return KPI_FRAMEWORK_DATABASE[industry].copy()
-    
+
     # Try partial matches for common variations
     for key in KPI_FRAMEWORK_DATABASE.keys():
         if industry in key or key in industry:
             return KPI_FRAMEWORK_DATABASE[key].copy()
-    
+
     return None
 
 
-def _create_generic_framework(industry: str) -> Dict[str, Any]:
+def _create_generic_framework(industry: str) -> dict[str, Any]:
     """Create a generic KPI framework for unknown industries."""
     return {
         "industry": "Unknown Industry",
@@ -162,42 +163,42 @@ def _create_generic_framework(industry: str) -> Dict[str, Any]:
 
 
 def _customize_framework_for_growth_stage(
-    framework: Dict[str, Any], 
+    framework: dict[str, Any],
     growth_stage: GrowthStage
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Customize KPI framework based on growth stage."""
     customized = framework.copy()
-    
+
     # Adjust KPI importance weights based on growth stage
     for idx, kpi in enumerate(customized["primary_kpis"]):
         kpi_name = kpi["name"].lower()
-        
+
         if growth_stage == GrowthStage.SEED:
             # Seed stage: Focus on product-market fit and efficiency
             if any(keyword in kpi_name for keyword in ["retention", "satisfaction", "nps"]):
                 kpi["importance_weight"] *= 1.2  # Increase importance
             elif any(keyword in kpi_name for keyword in ["revenue", "growth"]):
                 kpi["importance_weight"] *= 0.8  # Decrease importance
-                
+
         elif growth_stage == GrowthStage.EARLY:
             # Early stage: Balance growth and unit economics
             if any(keyword in kpi_name for keyword in ["cac", "ltv", "margin"]):
                 kpi["importance_weight"] *= 1.1  # Slightly increase importance
-                
+
         elif growth_stage == GrowthStage.GROWTH:
             # Growth stage: Focus on scalability and market expansion
             if any(keyword in kpi_name for keyword in ["revenue", "growth", "market"]):
                 kpi["importance_weight"] *= 1.2  # Increase importance
             elif any(keyword in kpi_name for keyword in ["burn", "efficiency"]):
                 kpi["importance_weight"] *= 1.1  # Increase efficiency focus
-                
+
         elif growth_stage == GrowthStage.MATURE:
             # Mature stage: Focus on profitability and sustainability
             if any(keyword in kpi_name for keyword in ["margin", "profit", "efficiency"]):
                 kpi["importance_weight"] *= 1.3  # Significantly increase importance
             elif any(keyword in kpi_name for keyword in ["growth", "acquisition"]):
                 kpi["importance_weight"] *= 0.9  # Slightly decrease importance
-    
+
     # Normalize weights to ensure they sum to reasonable values
     _normalize_kpi_weights(customized["primary_kpis"])
 
@@ -226,18 +227,18 @@ def _customize_framework_for_growth_stage(
                     factor -= epsilon * (idx + 1) / n
                 kpi["importance_weight"] *= factor
             _normalize_kpi_weights(customized["primary_kpis"])
-    
+
     return customized
 
 
 def _customize_framework_for_business_model(
-    framework: Dict[str, Any], 
+    framework: dict[str, Any],
     business_model: str
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Customize KPI framework based on business model."""
     customized = framework.copy()
     business_model_lower = business_model.lower()
-    
+
     # Add business model specific KPIs
     if "subscription" in business_model_lower or "saas" in business_model_lower:
         _add_subscription_kpis(customized)
@@ -252,11 +253,11 @@ def _customize_framework_for_business_model(
         # ensure b2b-specific KPIs are not present to keep sets distinct
         customized["primary_kpis"] = [k for k in customized["primary_kpis"] if k.get("name") not in {"Sales Cycle Length", "Average Deal Size"}]
     # Ensure distinct sets where both terms appear by preferring explicit branch only
-    
+
     return customized
 
 
-def _add_subscription_kpis(framework: Dict[str, Any]) -> None:
+def _add_subscription_kpis(framework: dict[str, Any]) -> None:
     """Add subscription-specific KPIs to framework."""
     subscription_kpis = [
         {
@@ -282,14 +283,14 @@ def _add_subscription_kpis(framework: Dict[str, Any]) -> None:
             }
         }
     ]
-    
+
     # Add to secondary KPIs if not already in primary
     for kpi in subscription_kpis:
         if not any(existing["name"] == kpi["name"] for existing in framework["primary_kpis"]):
             framework["primary_kpis"].append(kpi)
 
 
-def _add_marketplace_kpis(framework: Dict[str, Any]) -> None:
+def _add_marketplace_kpis(framework: dict[str, Any]) -> None:
     """Add marketplace-specific KPIs to framework."""
     marketplace_kpis = [
         {
@@ -315,13 +316,13 @@ def _add_marketplace_kpis(framework: Dict[str, Any]) -> None:
             }
         }
     ]
-    
+
     for kpi in marketplace_kpis:
         if not any(existing["name"] == kpi["name"] for existing in framework["primary_kpis"]):
             framework["primary_kpis"].append(kpi)
 
 
-def _add_b2b_kpis(framework: Dict[str, Any]) -> None:
+def _add_b2b_kpis(framework: dict[str, Any]) -> None:
     """Add B2B-specific KPIs to framework."""
     b2b_kpis = [
         {
@@ -347,13 +348,13 @@ def _add_b2b_kpis(framework: Dict[str, Any]) -> None:
             }
         }
     ]
-    
+
     for kpi in b2b_kpis:
         if not any(existing["name"] == kpi["name"] for existing in framework["primary_kpis"]):
             framework["primary_kpis"].append(kpi)
 
 
-def _add_b2c_kpis(framework: Dict[str, Any]) -> None:
+def _add_b2c_kpis(framework: dict[str, Any]) -> None:
     """Add B2C-specific KPIs to framework."""
     b2c_kpis = [
         {
@@ -379,39 +380,39 @@ def _add_b2c_kpis(framework: Dict[str, Any]) -> None:
             }
         }
     ]
-    
+
     for kpi in b2c_kpis:
         if not any(existing["name"] == kpi["name"] for existing in framework["primary_kpis"]):
             framework["primary_kpis"].append(kpi)
 
 
 def _prioritize_kpis_by_availability(
-    framework: Dict[str, Any], 
-    current_kpis: Dict[str, Any]
-) -> Dict[str, Any]:
+    framework: dict[str, Any],
+    current_kpis: dict[str, Any]
+) -> dict[str, Any]:
     """Prioritize KPIs based on data availability."""
     customized = framework.copy()
     available_kpi_names = set(current_kpis.keys())
-    
+
     # Boost importance of KPIs where data is available
     for kpi in customized["primary_kpis"]:
         kpi_name = kpi["name"]
         # Check for exact match or partial match
-        if (kpi_name in available_kpi_names or 
-            any(kpi_name.lower() in available_name.lower() or 
-                available_name.lower() in kpi_name.lower() 
+        if (kpi_name in available_kpi_names or
+            any(kpi_name.lower() in available_name.lower() or
+                available_name.lower() in kpi_name.lower()
                 for available_name in available_kpi_names)):
             kpi["importance_weight"] *= 1.1  # Boost available KPIs
         else:
             kpi["importance_weight"] *= 0.9  # Slightly reduce unavailable KPIs
-    
+
     # Normalize weights
     _normalize_kpi_weights(customized["primary_kpis"])
-    
+
     return customized
 
 
-def _normalize_kpi_weights(kpis: List[Dict[str, Any]]) -> None:
+def _normalize_kpi_weights(kpis: list[dict[str, Any]]) -> None:
     """Normalize KPI weights to sum to 1.0."""
     total_weight = sum(kpi["importance_weight"] for kpi in kpis)
     if total_weight > 0:
@@ -421,7 +422,7 @@ def _normalize_kpi_weights(kpis: List[Dict[str, Any]]) -> None:
 
 def validate_framework_completeness(
     framework: KPIFramework,
-    current_kpis: Dict[str, Any]
+    current_kpis: dict[str, Any]
 ) -> ValidationStatus:
     """
     Validate framework completeness and relevance.
@@ -435,18 +436,18 @@ def validate_framework_completeness(
     """
     primary_kpi_names = {kpi.name for kpi in framework.primary_kpis}
     available_kpi_names = set(current_kpis.keys())
-    
+
     # Calculate coverage
     matched_kpis = 0
     for kpi_name in primary_kpi_names:
-        if (kpi_name in available_kpi_names or 
-            any(kpi_name.lower() in available_name.lower() or 
-                available_name.lower() in kpi_name.lower() 
+        if (kpi_name in available_kpi_names or
+            any(kpi_name.lower() in available_name.lower() or
+                available_name.lower() in kpi_name.lower()
                 for available_name in available_kpi_names)):
             matched_kpis += 1
-    
+
     coverage_ratio = matched_kpis / len(primary_kpi_names) if primary_kpi_names else 0
-    
+
     # Determine validation status based on coverage
     if coverage_ratio >= 0.8:
         return ValidationStatus.COMPLETE
@@ -456,12 +457,12 @@ def validate_framework_completeness(
         return ValidationStatus.MISSING_INFO
 
 
-def convert_framework_dict_to_model(framework_dict: Dict[str, Any]) -> KPIFramework:
+def convert_framework_dict_to_model(framework_dict: dict[str, Any]) -> KPIFramework:
     """Convert framework dictionary to KPIFramework model."""
     primary_kpis = []
     for kpi_data in framework_dict["primary_kpis"]:
         # Convert benchmark_ranges to a flat dict[str, float] as required by KPIDefinition
-        flat_benchmarks: Dict[str, float] = {}
+        flat_benchmarks: dict[str, float] = {}
         raw = kpi_data.get("industry_benchmarks", kpi_data.get("benchmark_ranges", {}))
         if isinstance(raw, dict):
             # if nested by stage, prefer 'early' stage percentiles; otherwise use first nested dict
@@ -483,7 +484,7 @@ def convert_framework_dict_to_model(framework_dict: Dict[str, Any]) -> KPIFramew
             importance_weight=kpi_data["importance_weight"]
         )
         primary_kpis.append(kpi_def)
-    
+
     secondary_kpis = []
     for kpi_name in framework_dict.get("secondary_kpis", []):
         if isinstance(kpi_name, str):
@@ -496,7 +497,7 @@ def convert_framework_dict_to_model(framework_dict: Dict[str, Any]) -> KPIFramew
                 importance_weight=0.05  # Lower weight for secondary KPIs
             )
             secondary_kpis.append(kpi_def)
-    
+
     return KPIFramework(
         industry=framework_dict["industry"],
         primary_kpis=primary_kpis,

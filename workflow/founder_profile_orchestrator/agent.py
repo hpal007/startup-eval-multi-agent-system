@@ -10,7 +10,6 @@ import logging
 from google.adk.agents import Agent, SequentialAgent
 from google.adk.agents.callback_context import CallbackContext
 from google.adk.models import LlmResponse
-from google.adk.planners import PlanReActPlanner
 from google.adk.tools import FunctionTool
 from google.genai import types
 

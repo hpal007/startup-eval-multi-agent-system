@@ -4,8 +4,11 @@ import logging
 
 from google.adk.agents import Agent
 from google.genai import types
+
 from utils.configs import config
+
 from . import prompt
+
 MODEL = config.get_model_for_agent("abc_agent")
 
 
@@ -45,13 +48,13 @@ def select_industry_kpi_framework(
     Returns:
         Customized KPI framework with primary and secondary KPIs
     """
-    from utils.models import IndustryClassification, GrowthStage
     from tools.kpi_framework_tools import (
-        select_kpi_framework,
         convert_framework_dict_to_model,
-        validate_framework_completeness
+        select_kpi_framework,
+        validate_framework_completeness,
     )
-    
+    from utils.models import GrowthStage, IndustryClassification
+
     # Convert inputs to proper models
     industry_class = IndustryClassification(**industry_classification)
 
@@ -74,18 +77,18 @@ def select_industry_kpi_framework(
 
     growth_stage_normalized = _normalize_growth_stage(growth_stage)
     growth_stage_enum = GrowthStage(growth_stage_normalized)
-    
+
     # Select and customize framework
     framework_dict = select_kpi_framework(
         industry_class, growth_stage_enum, business_model, current_kpis
     )
-    
+
     # Convert to KPIFramework model
     framework_model = convert_framework_dict_to_model(framework_dict)
-    
+
     # Validate completeness
     validation_status = validate_framework_completeness(framework_model, current_kpis)
-    
+
     return {
         "framework": framework_model.dict(),
         "validation_status": validation_status.value,
@@ -104,8 +107,8 @@ def validate_kpi_framework_completeness(framework: dict, current_kpis: dict) -> 
     Returns:
         Validation results with status and recommendations
     """
-    from utils.models import KPIFramework
     from tools.kpi_framework_tools import validate_framework_completeness
+    from utils.models import KPIFramework
 
     def _coerce_kpi_list(kpis):
         # Accept strings or dicts; convert strings to minimal KPIDefinition-like dicts
@@ -177,25 +180,25 @@ def validate_kpi_framework_completeness(framework: dict, current_kpis: dict) -> 
         }
 
     validation_status = validate_framework_completeness(framework_model, current_kpis)
-    
+
     # Calculate coverage metrics
     primary_kpi_names = {kpi.name for kpi in framework_model.primary_kpis}
     available_kpi_names = set(current_kpis.keys())
-    
+
     matched_kpis = []
     missing_kpis = []
-    
+
     for kpi_name in primary_kpi_names:
-        if (kpi_name in available_kpi_names or 
-            any(kpi_name.lower() in available_name.lower() or 
-                available_name.lower() in kpi_name.lower() 
+        if (kpi_name in available_kpi_names or
+            any(kpi_name.lower() in available_name.lower() or
+                available_name.lower() in kpi_name.lower()
                 for available_name in available_kpi_names)):
             matched_kpis.append(kpi_name)
         else:
             missing_kpis.append(kpi_name)
-    
+
     coverage_ratio = len(matched_kpis) / len(primary_kpi_names) if primary_kpi_names else 0
-    
+
     return {
         "validation_status": validation_status.value,
         "coverage_ratio": coverage_ratio,
@@ -208,7 +211,7 @@ def validate_kpi_framework_completeness(framework: dict, current_kpis: dict) -> 
 def _generate_framework_recommendations(validation_status, missing_kpis):
     """Generate recommendations based on framework validation."""
     recommendations = []
-    
+
     if validation_status.value == "missing_info":
         recommendations.append("Critical KPI data is missing. Consider collecting data for the following metrics:")
         recommendations.extend([f"- {kpi}" for kpi in missing_kpis[:5]])  # Top 5 missing KPIs
@@ -218,7 +221,7 @@ def _generate_framework_recommendations(validation_status, missing_kpis):
     else:
         recommendations.append("KPI framework is well-aligned with available data.")
         recommendations.append("Consider expanding tracking to secondary KPIs for deeper insights.")
-    
+
     return recommendations
 
 

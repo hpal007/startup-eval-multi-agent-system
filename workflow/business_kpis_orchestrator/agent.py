@@ -9,8 +9,6 @@ import logging
 
 from google.adk.agents import Agent, ParallelAgent, SequentialAgent
 from google.adk.models import LlmResponse
-from google.adk.planners import PlanReActPlanner
-from google.genai import types
 
 from utils.configs import config
 from utils.helper import get_session_dir, save_llm_response_to_file

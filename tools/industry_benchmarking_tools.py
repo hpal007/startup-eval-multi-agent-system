@@ -1,13 +1,13 @@
 """Tools for industry benchmarking and statistical analysis."""
 
-from typing import Dict, List, Any, Optional
+from typing import Any
 
 
 def calculate_percentile_ranking(
     kpi_value: float,
-    benchmark_data: Dict[str, float],
+    benchmark_data: dict[str, float],
     kpi_name: str
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Calculate percentile ranking for a KPI value against industry benchmarks.
     
@@ -26,21 +26,21 @@ def calculate_percentile_ranking(
             "benchmark_comparison": "No benchmark data available",
             "improvement_potential": "Cannot assess without benchmarks"
         }
-    
+
     # Extract percentile values
     p25 = benchmark_data.get("p25", 0)
     p50 = benchmark_data.get("p50", 0)
     p75 = benchmark_data.get("p75", 0)
     p90 = benchmark_data.get("p90", p75 * 1.2)  # Estimate if not provided
-    
+
     # Determine if higher values are better (most KPIs) or worse (costs, churn)
     lower_is_better_kpis = [
         "churn", "burn", "cost", "cac", "customer acquisition cost",
         "attrition", "turnover", "cycle time", "response time"
     ]
-    
+
     is_lower_better = any(keyword in kpi_name.lower() for keyword in lower_is_better_kpis)
-    
+
     # Calculate percentile ranking
     if is_lower_better:
         # For metrics where lower is better (costs, churn, etc.)
@@ -73,17 +73,17 @@ def calculate_percentile_ranking(
         else:
             percentile = max(0, (kpi_value / p25) * 25)  # 0-25th percentile
             performance_level = "Poor"
-    
+
     # Generate benchmark comparison text
     benchmark_comparison = _generate_benchmark_comparison(
         kpi_value, p25, p50, p75, kpi_name, is_lower_better
     )
-    
+
     # Generate improvement potential assessment
     improvement_potential = _assess_improvement_potential(
         percentile, performance_level, kpi_name, is_lower_better
     )
-    
+
     return {
         "percentile": round(percentile, 1),
         "performance_level": performance_level,
@@ -99,10 +99,10 @@ def calculate_percentile_ranking(
 
 
 def analyze_performance_gaps(
-    startup_kpis: Dict[str, float],
-    kpi_framework: Dict[str, Any],
+    startup_kpis: dict[str, float],
+    kpi_framework: dict[str, Any],
     growth_stage: str
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Analyze performance gaps across multiple KPIs.
     
@@ -122,29 +122,29 @@ def analyze_performance_gaps(
         "critical_gaps": [],
         "competitive_advantages": []
     }
-    
+
     total_weighted_score = 0.0
     total_weight = 0.0
-    
+
     # Analyze each primary KPI
     for kpi_data in kpi_framework.get("primary_kpis", []):
         kpi_name = kpi_data["name"]
         importance_weight = kpi_data.get("importance_weight", 0.1)
-        
+
         # Find matching startup KPI (exact or partial match)
         startup_value = _find_matching_kpi_value(startup_kpis, kpi_name)
-        
+
         if startup_value is not None:
             # Get appropriate benchmark data for growth stage
             benchmark_ranges = kpi_data.get("benchmark_ranges", {})
             stage_benchmarks = benchmark_ranges.get(growth_stage, {})
-            
+
             if stage_benchmarks:
                 # Calculate percentile ranking
                 percentile_result = calculate_percentile_ranking(
                     startup_value, stage_benchmarks, kpi_name
                 )
-                
+
                 # Create KPI performance record
                 kpi_performance = {
                     "kpi_name": kpi_name,
@@ -155,14 +155,14 @@ def analyze_performance_gaps(
                     "importance_weight": importance_weight,
                     "weighted_score": (percentile_result["percentile"] or 0) * importance_weight
                 }
-                
+
                 performance_analysis["kpi_performances"].append(kpi_performance)
-                
+
                 # Add to overall score calculation
                 if percentile_result["percentile"] is not None:
                     total_weighted_score += kpi_performance["weighted_score"]
                     total_weight += importance_weight
-                
+
                 # Categorize performance
                 percentile = percentile_result["percentile"] or 0
                 if percentile >= 90:
@@ -191,11 +191,11 @@ def analyze_performance_gaps(
                         "description": f"Below average performance in {kpi_name}",
                         "priority": "Medium" if importance_weight > 0.10 else "Low"
                     })
-    
+
     # Calculate overall performance score
     if total_weight > 0:
         performance_analysis["overall_score"] = total_weighted_score / total_weight
-    
+
     # Generate performance summary
     performance_analysis["performance_summary"] = _generate_performance_summary(
         performance_analysis["overall_score"],
@@ -203,14 +203,14 @@ def analyze_performance_gaps(
         len(performance_analysis["improvement_areas"]),
         len(performance_analysis["critical_gaps"])
     )
-    
+
     return performance_analysis
 
 def generate_improvement_recommendations(
-    performance_gaps: Dict[str, Any],
+    performance_gaps: dict[str, Any],
     industry: str,
     growth_stage: str
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """
     Generate specific improvement recommendations based on performance gaps.
     
@@ -223,14 +223,14 @@ def generate_improvement_recommendations(
         List of prioritized improvement recommendations
     """
     recommendations = []
-    
+
     # Process critical gaps first (highest priority)
     for gap in performance_gaps.get("critical_gaps", []):
         kpi_name = gap["kpi"]
         recommendations.extend(_get_kpi_specific_recommendations(
             kpi_name, "Critical", industry, growth_stage
         ))
-    
+
     # Process improvement areas (medium priority)
     for area in performance_gaps.get("improvement_areas", []):
         kpi_name = area["kpi"]
@@ -238,26 +238,26 @@ def generate_improvement_recommendations(
         recommendations.extend(_get_kpi_specific_recommendations(
             kpi_name, priority, industry, growth_stage
         ))
-    
+
     # Add growth stage specific recommendations
     recommendations.extend(_get_growth_stage_recommendations(
         growth_stage, performance_gaps["overall_score"]
     ))
-    
+
     # Sort by priority and impact
     recommendations.sort(key=lambda x: (
         {"Critical": 0, "High": 1, "Medium": 2, "Low": 3}[x["priority"]],
         -x.get("impact_score", 0)
     ))
-    
+
     return recommendations[:10]  # Return top 10 recommendations
 
 
 def calculate_industry_position(
     overall_score: float,
-    kpi_performances: List[Dict[str, Any]],
+    kpi_performances: list[dict[str, Any]],
     industry: str
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Calculate startup's position within the industry.
     
@@ -285,15 +285,15 @@ def calculate_industry_position(
     else:
         position = "Needs Improvement"
         position_description = "Significant performance gaps compared to industry standards"
-    
+
     # Calculate performance distribution
     excellent_count = sum(1 for kpi in kpi_performances if kpi.get("percentile", 0) >= 90)
     good_count = sum(1 for kpi in kpi_performances if 75 <= kpi.get("percentile", 0) < 90)
     average_count = sum(1 for kpi in kpi_performances if 50 <= kpi.get("percentile", 0) < 75)
     poor_count = sum(1 for kpi in kpi_performances if kpi.get("percentile", 0) < 50)
-    
+
     total_kpis = len(kpi_performances)
-    
+
     return {
         "industry_position": position,
         "position_description": position_description,
@@ -309,29 +309,29 @@ def calculate_industry_position(
     }
 
 
-def _find_matching_kpi_value(startup_kpis: Dict[str, float], target_kpi: str) -> Optional[float]:
+def _find_matching_kpi_value(startup_kpis: dict[str, float], target_kpi: str) -> float | None:
     """Find matching KPI value from startup data."""
     # Try exact match first
     if target_kpi in startup_kpis:
         return startup_kpis[target_kpi]
-    
+
     # Try case-insensitive match
     target_lower = target_kpi.lower()
     for kpi_name, value in startup_kpis.items():
         if kpi_name.lower() == target_lower:
             return value
-    
+
     # Try partial matches
     for kpi_name, value in startup_kpis.items():
-        if (target_lower in kpi_name.lower() or 
+        if (target_lower in kpi_name.lower() or
             kpi_name.lower() in target_lower):
             return value
-    
+
     return None
 
 
 def _generate_benchmark_comparison(
-    value: float, p25: float, p50: float, p75: float, 
+    value: float, p25: float, p50: float, p75: float,
     kpi_name: str, is_lower_better: bool
 ) -> str:
     """Generate human-readable benchmark comparison."""
@@ -373,11 +373,11 @@ def _assess_improvement_potential(
 
 def _get_kpi_specific_recommendations(
     kpi_name: str, priority: str, industry: str, growth_stage: str
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """Get specific recommendations for improving a KPI."""
     recommendations = []
     kpi_lower = kpi_name.lower()
-    
+
     # Revenue and growth KPIs
     if any(keyword in kpi_lower for keyword in ["revenue", "growth", "arr", "mrr"]):
         recommendations.append({
@@ -392,7 +392,7 @@ def _get_kpi_specific_recommendations(
             "impact_score": 9,
             "timeframe": "3-6 months"
         })
-    
+
     # Customer acquisition and retention
     elif any(keyword in kpi_lower for keyword in ["cac", "acquisition", "cost"]):
         recommendations.append({
@@ -407,7 +407,7 @@ def _get_kpi_specific_recommendations(
             "impact_score": 8,
             "timeframe": "2-4 months"
         })
-    
+
     elif any(keyword in kpi_lower for keyword in ["churn", "retention", "ltv"]):
         recommendations.append({
             "category": "Customer Retention",
@@ -421,7 +421,7 @@ def _get_kpi_specific_recommendations(
             "impact_score": 9,
             "timeframe": "2-3 months"
         })
-    
+
     # Operational efficiency
     elif any(keyword in kpi_lower for keyword in ["margin", "efficiency", "productivity"]):
         recommendations.append({
@@ -436,7 +436,7 @@ def _get_kpi_specific_recommendations(
             "impact_score": 7,
             "timeframe": "3-6 months"
         })
-    
+
     # Financial management
     elif any(keyword in kpi_lower for keyword in ["burn", "runway", "cash"]):
         recommendations.append({
@@ -451,14 +451,14 @@ def _get_kpi_specific_recommendations(
             "impact_score": 10,
             "timeframe": "1-2 months"
         })
-    
+
     return recommendations
 
 
-def _get_growth_stage_recommendations(growth_stage: str, overall_score: float) -> List[Dict[str, Any]]:
+def _get_growth_stage_recommendations(growth_stage: str, overall_score: float) -> list[dict[str, Any]]:
     """Get growth stage specific recommendations."""
     recommendations = []
-    
+
     if growth_stage == "seed":
         recommendations.append({
             "category": "Product-Market Fit",
@@ -472,7 +472,7 @@ def _get_growth_stage_recommendations(growth_stage: str, overall_score: float) -
             "impact_score": 9,
             "timeframe": "2-4 months"
         })
-    
+
     elif growth_stage == "early":
         recommendations.append({
             "category": "Scalable Growth",
@@ -486,7 +486,7 @@ def _get_growth_stage_recommendations(growth_stage: str, overall_score: float) -
             "impact_score": 8,
             "timeframe": "3-6 months"
         })
-    
+
     elif growth_stage == "growth":
         recommendations.append({
             "category": "Market Expansion",
@@ -500,12 +500,12 @@ def _get_growth_stage_recommendations(growth_stage: str, overall_score: float) -
             "impact_score": 7,
             "timeframe": "6-12 months"
         })
-    
+
     return recommendations
 
 
 def _generate_performance_summary(
-    overall_score: float, strengths_count: int, 
+    overall_score: float, strengths_count: int,
     improvement_areas_count: int, critical_gaps_count: int
 ) -> str:
     """Generate overall performance summary."""
@@ -528,7 +528,7 @@ def _get_industry_context(industry: str, position: str) -> str:
         "healthcare": "Healthcare startups focus on clinical outcomes, regulatory approvals, and patient satisfaction",
         "marketplace": "Marketplace platforms prioritize network effects, transaction volume, and take rates"
     }
-    
+
     base_context = industry_contexts.get(industry.lower(), "Industry-specific performance benchmarks vary significantly")
     return f"{base_context}. Current position as '{position}' indicates {'strong competitive standing' if position in ['Top Performer', 'Above Average'] else 'opportunities for improvement'}."
 
@@ -547,10 +547,10 @@ def _generate_peer_comparison(overall_score: float, industry: str) -> str:
 def validate_exceptional_performance(
     kpi_name: str,
     kpi_value: float,
-    benchmark_data: Dict[str, float],
+    benchmark_data: dict[str, float],
     industry: str,
     growth_stage: str
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Validate exceptional performance claims and identify potential competitive advantages.
     
@@ -571,29 +571,29 @@ def validate_exceptional_performance(
             "competitive_advantage": False,
             "validation_confidence": 0.0
         }
-    
+
     # Calculate percentile to determine if performance is exceptional
     percentile_result = calculate_percentile_ranking(kpi_value, benchmark_data, kpi_name)
     percentile = percentile_result.get("percentile", 0)
-    
+
     # Define exceptional performance threshold (90th+ percentile)
     is_exceptional = percentile >= 90
-    
+
     # Validate the claim based on industry context
     validation_confidence = _calculate_validation_confidence(
         kpi_name, kpi_value, benchmark_data, industry, growth_stage
     )
-    
+
     # Determine if this represents a competitive advantage
     competitive_advantage = _assess_competitive_advantage(
         kpi_name, percentile, industry, growth_stage
     )
-    
+
     # Generate validation explanation
     validation_explanation = _generate_validation_explanation(
         kpi_name, kpi_value, percentile, is_exceptional, competitive_advantage
     )
-    
+
     return {
         "is_exceptional": is_exceptional,
         "percentile": percentile,
@@ -610,11 +610,11 @@ def validate_exceptional_performance(
 
 
 def correlate_market_trends(
-    startup_kpis: Dict[str, float],
+    startup_kpis: dict[str, float],
     industry: str,
-    market_trends: List[str],
+    market_trends: list[str],
     growth_stage: str
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Correlate startup KPI performance with identified market trends.
     
@@ -634,11 +634,11 @@ def correlate_market_trends(
         "risk_indicators": [],
         "strategic_implications": []
     }
-    
+
     # Analyze each trend for KPI correlation
     for trend in market_trends:
         trend_lower = trend.lower()
-        
+
         # Growth trends
         if any(keyword in trend_lower for keyword in ["growth", "expansion", "increasing", "rising"]):
             growth_kpis = _find_growth_related_kpis(startup_kpis)
@@ -646,7 +646,7 @@ def correlate_market_trends(
                 correlation = _assess_trend_kpi_correlation(kpi_name, kpi_value, trend, "positive")
                 if correlation["strength"] > 0.5:
                     correlations["trend_alignment"].append(correlation)
-        
+
         # Efficiency trends
         elif any(keyword in trend_lower for keyword in ["efficiency", "optimization", "automation"]):
             efficiency_kpis = _find_efficiency_related_kpis(startup_kpis)
@@ -654,27 +654,27 @@ def correlate_market_trends(
                 correlation = _assess_trend_kpi_correlation(kpi_name, kpi_value, trend, "efficiency")
                 if correlation["strength"] > 0.5:
                     correlations["trend_alignment"].append(correlation)
-        
+
         # Market consolidation trends
         elif any(keyword in trend_lower for keyword in ["consolidation", "competition", "saturation"]):
             competitive_kpis = _find_competitive_related_kpis(startup_kpis)
             for kpi_name, kpi_value in competitive_kpis.items():
                 correlation = _assess_trend_kpi_correlation(kpi_name, kpi_value, trend, "competitive")
                 correlations["risk_indicators"].append(correlation)
-    
+
     # Generate strategic implications
     correlations["strategic_implications"] = _generate_strategic_implications(
         correlations, industry, growth_stage
     )
-    
+
     return correlations
 
 def generate_typical_ranges_context(
     kpi_name: str,
     industry: str,
     growth_stage: str,
-    benchmark_data: Dict[str, float]
-) -> Dict[str, Any]:
+    benchmark_data: dict[str, float]
+) -> dict[str, Any]:
     """
     Generate context on typical ranges and performance expectations for a KPI.
     
@@ -693,13 +693,13 @@ def generate_typical_ranges_context(
             "performance_expectations": "Cannot provide expectations without benchmarks",
             "context": "Benchmark data needed for meaningful comparison"
         }
-    
+
     # Extract percentile ranges
     p25 = benchmark_data.get("p25", 0)
     p50 = benchmark_data.get("p50", 0)
     p75 = benchmark_data.get("p75", 0)
     p90 = benchmark_data.get("p90", p75 * 1.2)
-    
+
     # Generate typical ranges description
     typical_ranges = {
         "poor_performance": f"Below {p25} (bottom 25%)",
@@ -708,17 +708,17 @@ def generate_typical_ranges_context(
         "good_performance": f"{p75} - {p90} (75th-90th percentile)",
         "exceptional_performance": f"Above {p90} (top 10%)"
     }
-    
+
     # Generate performance expectations based on growth stage
     performance_expectations = _generate_stage_specific_expectations(
         kpi_name, industry, growth_stage, benchmark_data
     )
-    
+
     # Generate industry-specific context
     industry_context = _generate_industry_specific_context(
         kpi_name, industry, benchmark_data
     )
-    
+
     return {
         "typical_ranges": typical_ranges,
         "performance_expectations": performance_expectations,
@@ -729,32 +729,32 @@ def generate_typical_ranges_context(
 
 
 def _calculate_validation_confidence(
-    kpi_name: str, kpi_value: float, benchmark_data: Dict[str, float],
+    kpi_name: str, kpi_value: float, benchmark_data: dict[str, float],
     industry: str, growth_stage: str
 ) -> float:
     """Calculate confidence level for exceptional performance validation."""
     confidence_factors = []
-    
+
     # Data quality factor
     if len(benchmark_data) >= 3:  # Has p25, p50, p75
         confidence_factors.append(0.8)
     else:
         confidence_factors.append(0.5)
-    
+
     # Industry specificity factor
     industry_specific_industries = ["saas", "ecommerce", "fintech", "healthcare"]
     if any(ind in industry.lower() for ind in industry_specific_industries):
         confidence_factors.append(0.9)
     else:
         confidence_factors.append(0.6)
-    
+
     # KPI importance factor
     critical_kpis = ["revenue", "growth", "retention", "margin", "cac", "ltv"]
     if any(kpi in kpi_name.lower() for kpi in critical_kpis):
         confidence_factors.append(0.9)
     else:
         confidence_factors.append(0.7)
-    
+
     # Calculate weighted average confidence
     return sum(confidence_factors) / len(confidence_factors)
 
@@ -766,14 +766,14 @@ def _assess_competitive_advantage(
     # Must be in top 10% to be considered competitive advantage
     if percentile < 90:
         return False
-    
+
     # Strategic KPIs that provide competitive advantages
     strategic_kpis = [
         "customer retention", "nps", "net promoter score", "customer satisfaction",
         "gross margin", "unit economics", "ltv/cac", "market share",
         "brand recognition", "customer acquisition cost", "viral coefficient"
     ]
-    
+
     return any(strategic_kpi in kpi_name.lower() for strategic_kpi in strategic_kpis)
 
 
@@ -791,7 +791,7 @@ def _generate_validation_explanation(
         return f"{kpi_name} performance at {kpi_value} is within normal industry ranges ({percentile:.1f}th percentile)."
 
 
-def _find_growth_related_kpis(startup_kpis: Dict[str, float]) -> Dict[str, float]:
+def _find_growth_related_kpis(startup_kpis: dict[str, float]) -> dict[str, float]:
     """Find KPIs related to growth metrics."""
     growth_keywords = ["growth", "revenue", "user", "customer", "arr", "mrr", "expansion"]
     return {
@@ -800,7 +800,7 @@ def _find_growth_related_kpis(startup_kpis: Dict[str, float]) -> Dict[str, float
     }
 
 
-def _find_efficiency_related_kpis(startup_kpis: Dict[str, float]) -> Dict[str, float]:
+def _find_efficiency_related_kpis(startup_kpis: dict[str, float]) -> dict[str, float]:
     """Find KPIs related to efficiency metrics."""
     efficiency_keywords = ["margin", "productivity", "efficiency", "cost", "cac", "ltv", "automation"]
     return {
@@ -809,7 +809,7 @@ def _find_efficiency_related_kpis(startup_kpis: Dict[str, float]) -> Dict[str, f
     }
 
 
-def _find_competitive_related_kpis(startup_kpis: Dict[str, float]) -> Dict[str, float]:
+def _find_competitive_related_kpis(startup_kpis: dict[str, float]) -> dict[str, float]:
     """Find KPIs related to competitive positioning."""
     competitive_keywords = ["market share", "retention", "nps", "satisfaction", "churn", "competitive"]
     return {
@@ -820,19 +820,17 @@ def _find_competitive_related_kpis(startup_kpis: Dict[str, float]) -> Dict[str, 
 
 def _assess_trend_kpi_correlation(
     kpi_name: str, kpi_value: float, trend: str, trend_type: str
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Assess correlation between a KPI and market trend."""
     # Simplified correlation assessment
     correlation_strength = 0.7  # Default moderate correlation
-    
+
     # Adjust based on trend type and KPI relevance
     if trend_type == "positive" and "growth" in kpi_name.lower():
         correlation_strength = 0.9
-    elif trend_type == "efficiency" and any(keyword in kpi_name.lower() for keyword in ["margin", "cost", "efficiency"]):
+    elif (trend_type == "efficiency" and any(keyword in kpi_name.lower() for keyword in ["margin", "cost", "efficiency"])) or (trend_type == "competitive" and any(keyword in kpi_name.lower() for keyword in ["retention", "share", "nps"])):
         correlation_strength = 0.8
-    elif trend_type == "competitive" and any(keyword in kpi_name.lower() for keyword in ["retention", "share", "nps"]):
-        correlation_strength = 0.8
-    
+
     return {
         "kpi_name": kpi_name,
         "kpi_value": kpi_value,
@@ -843,51 +841,51 @@ def _assess_trend_kpi_correlation(
 
 
 def _generate_strategic_implications(
-    correlations: Dict[str, Any], industry: str, growth_stage: str
-) -> List[str]:
+    correlations: dict[str, Any], industry: str, growth_stage: str
+) -> list[str]:
     """Generate strategic implications from trend correlations."""
     implications = []
-    
+
     # Positive trend alignments
     if correlations["trend_alignment"]:
         implications.append(
             f"Strong alignment with {len(correlations['trend_alignment'])} market trends suggests good strategic positioning"
         )
-    
+
     # Risk indicators
     if correlations["risk_indicators"]:
         implications.append(
             f"Identified {len(correlations['risk_indicators'])} potential risk areas requiring strategic attention"
         )
-    
+
     # Growth stage specific implications
     if growth_stage == "seed":
         implications.append("Focus on validating product-market fit while monitoring emerging trends")
     elif growth_stage == "growth":
         implications.append("Leverage trend alignment to accelerate market expansion")
-    
+
     return implications
 
 
 def _generate_stage_specific_expectations(
-    kpi_name: str, industry: str, growth_stage: str, benchmark_data: Dict[str, float]
+    kpi_name: str, industry: str, growth_stage: str, benchmark_data: dict[str, float]
 ) -> str:
     """Generate growth stage specific performance expectations."""
     p50 = benchmark_data.get("p50", 0)
     p75 = benchmark_data.get("p75", 0)
-    
+
     stage_expectations = {
         "seed": f"Seed stage companies typically target {p50} as baseline, with {p75} representing strong performance",
         "early": f"Early stage companies should aim for {p75} or higher to demonstrate scalability",
         "growth": f"Growth stage companies need consistent performance above {p75} to maintain momentum",
         "mature": f"Mature companies should sustain performance at or above {p75} while optimizing efficiency"
     }
-    
+
     return stage_expectations.get(growth_stage, f"Target performance above industry median ({p50})")
 
 
 def _generate_industry_specific_context(
-    kpi_name: str, industry: str, benchmark_data: Dict[str, float]
+    kpi_name: str, industry: str, benchmark_data: dict[str, float]
 ) -> str:
     """Generate industry-specific context for KPI interpretation."""
     industry_contexts = {
@@ -896,7 +894,7 @@ def _generate_industry_specific_context(
         "fintech": "Fintech companies emphasize regulatory compliance and transaction volume growth",
         "healthcare": "Healthcare startups prioritize clinical outcomes and regulatory milestone achievement"
     }
-    
+
     base_context = industry_contexts.get(industry.lower(), "Industry-specific benchmarks vary significantly")
     return f"{base_context}. Current benchmark median of {benchmark_data.get('p50', 'N/A')} reflects typical industry performance."
 
@@ -904,7 +902,7 @@ def _generate_industry_specific_context(
 def _generate_benchmark_interpretation(kpi_name: str) -> str:
     """Generate interpretation guidance for benchmark data."""
     kpi_lower = kpi_name.lower()
-    
+
     if any(keyword in kpi_lower for keyword in ["cost", "churn", "burn"]):
         return "Lower values indicate better performance for this metric"
     elif any(keyword in kpi_lower for keyword in ["revenue", "growth", "retention", "margin"]):
@@ -921,5 +919,5 @@ def _generate_improvement_trajectory(kpi_name: str, growth_stage: str) -> str:
         "growth": "Maintain consistent performance while scaling operations efficiently",
         "mature": "Optimize for sustainable performance with incremental improvements"
     }
-    
+
     return trajectories.get(growth_stage, "Establish consistent measurement and improvement processes")

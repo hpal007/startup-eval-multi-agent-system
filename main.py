@@ -3,27 +3,20 @@ FastAPI server for Startup Evaluation Multi-Agent System
 Minimal working base for backend integration
 """
 
-import os
+import asyncio
 import uuid
 from pathlib import Path
-from fastapi import FastAPI, File, UploadFile, HTTPException, Request
+
+from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
-
-
-import asyncio
-
-from dotenv import load_dotenv
 from google.adk.artifacts import InMemoryArtifactService
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
-from google.genai import types
 from google.genai.types import Content, Part
-
+from pydantic import BaseModel
 
 from workflow.master.agent import root_agent
-
 
 app = FastAPI(
     title="Startup Evaluation API",
@@ -103,7 +96,6 @@ async def process(request: Request):
     Streams ADK agent events/results back to frontend as server-sent events.
     Expects payload JSON with 'query' or file info.
     """
-    import asyncio
     import json
     from datetime import datetime
 
@@ -122,7 +114,7 @@ async def process(request: Request):
 
     async def event_stream():
         def sse(data: dict) -> bytes:
-            return f"data: {json.dumps(data)}\n\n".encode("utf-8")
+            return f"data: {json.dumps(data)}\n\n".encode()
 
         # ADK session and state management
         session = await session_service.create_session(

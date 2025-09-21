@@ -3,9 +3,8 @@ Market research integration tools for Business KPIs Orchestrator.
 Adapts existing search tools with rate limiting, caching, and industry-specific capabilities.
 """
 
-import time
 import logging
-from typing import Dict, List
+import time
 
 from tools.search_tool import concise_google_search, search_indian_news
 
@@ -25,14 +24,14 @@ def market_size_validation_search(market_segment: str, market_size_type: str = "
     """
     # Simple rate limiting
     time.sleep(0.5)
-    
+
     # Generate market size validation queries
     validation_queries = [
         f"{market_segment} market size {market_size_type} 2024 Gartner",
         f"{market_segment} market research Forrester McKinsey",
         f"{market_segment} industry report market value"
     ]
-    
+
     results = []
     for query in validation_queries:
         try:
@@ -42,7 +41,7 @@ def market_size_validation_search(market_segment: str, market_size_type: str = "
         except Exception as e:
             logger.warning(f"Failed search '{query}': {e}")
             continue
-    
+
     return "\n\n".join(results) if results else f"No market size validation data found for {market_segment} {market_size_type}"
 
 
@@ -59,14 +58,14 @@ def industry_benchmark_search(industry: str, kpi_name: str) -> str:
     """
     # Simple rate limiting
     time.sleep(0.5)
-    
+
     # Generate industry benchmark queries
     benchmark_queries = [
         f"{industry} {kpi_name} industry benchmark average",
         f"{industry} {kpi_name} industry standard typical range",
         f"{industry} companies {kpi_name} benchmark report"
     ]
-    
+
     results = []
     for query in benchmark_queries:
         try:
@@ -76,7 +75,7 @@ def industry_benchmark_search(industry: str, kpi_name: str) -> str:
         except Exception as e:
             logger.warning(f"Failed search '{query}': {e}")
             continue
-    
+
     return "\n\n".join(results) if results else f"No benchmark data found for {kpi_name} in {industry} industry"
 
 
@@ -93,7 +92,7 @@ def industry_report_search(industry: str, report_type: str = "market_analysis") 
     """
     # Simple rate limiting
     time.sleep(0.5)
-    
+
     # Generate industry report queries based on type
     if report_type == "trends":
         report_queries = [
@@ -115,7 +114,7 @@ def industry_report_search(industry: str, report_type: str = "market_analysis") 
             f"{industry} market analysis report 2024",
             f"{industry} industry overview market research"
         ]
-    
+
     results = []
     for query in report_queries:
         try:
@@ -125,7 +124,7 @@ def industry_report_search(industry: str, report_type: str = "market_analysis") 
         except Exception as e:
             logger.warning(f"Failed search '{query}': {e}")
             continue
-    
+
     return "\n\n".join(results) if results else f"No industry reports found for {industry} ({report_type})"
 
 
@@ -143,14 +142,14 @@ def kpi_validation_search(company_name: str, kpi_name: str, claimed_value: str) 
     """
     # Simple rate limiting
     time.sleep(0.5)
-    
+
     # Generate KPI validation queries
     validation_queries = [
         f"{company_name} {kpi_name} performance metrics",
         f"{kpi_name} {claimed_value} industry comparison",
         f"{company_name} financial metrics {kpi_name}"
     ]
-    
+
     results = []
     for query in validation_queries:
         try:
@@ -160,7 +159,7 @@ def kpi_validation_search(company_name: str, kpi_name: str, claimed_value: str) 
         except Exception as e:
             logger.warning(f"Failed search '{query}': {e}")
             continue
-    
+
     # Also search Indian news for any mentions
     try:
         news_result = search_indian_news(f"{company_name} {kpi_name}")
@@ -168,7 +167,7 @@ def kpi_validation_search(company_name: str, kpi_name: str, claimed_value: str) 
             results.append(f"**News Coverage**: {news_result}")
     except Exception as e:
         logger.warning(f"Failed news search: {e}")
-    
+
     return "\n\n".join(results) if results else f"No validation data found for {company_name}'s {kpi_name} claim of {claimed_value}"
 
 
@@ -185,14 +184,14 @@ def funding_validation_search(company_name: str, claimed_funding: str) -> str:
     """
     # Simple rate limiting
     time.sleep(0.5)
-    
+
     # Generate funding validation queries
     funding_queries = [
         f"{company_name} funding {claimed_funding} series round",
         f"{company_name} investment valuation {claimed_funding}",
         f"{company_name} funding announcement {claimed_funding}"
     ]
-    
+
     results = []
     for query in funding_queries:
         try:
@@ -202,7 +201,7 @@ def funding_validation_search(company_name: str, claimed_funding: str) -> str:
         except Exception as e:
             logger.warning(f"Failed search '{query}': {e}")
             continue
-    
+
     # Search Indian news for funding announcements
     try:
         news_result = search_indian_news(f"{company_name} funding {claimed_funding}")
@@ -210,7 +209,7 @@ def funding_validation_search(company_name: str, claimed_funding: str) -> str:
             results.append(f"**News Coverage**: {news_result}")
     except Exception as e:
         logger.warning(f"Failed news search: {e}")
-    
+
     return "\n\n".join(results) if results else f"No funding validation data found for {company_name}'s claim of {claimed_funding}"
 
 
@@ -226,44 +225,44 @@ def comprehensive_market_research(market_segment: str, research_focus: str = "co
         Comprehensive market research findings
     """
     results = {}
-    
+
     try:
         # Market size validation
         if research_focus in ["comprehensive", "size"]:
             tam_result = market_size_validation_search(market_segment, "TAM")
             results["market_size"] = tam_result
-        
+
         # Industry reports
         if research_focus in ["comprehensive", "trends"]:
             trends_result = industry_report_search(market_segment, "trends")
             results["industry_trends"] = trends_result
-        
+
         # Competitive landscape
         if research_focus in ["comprehensive", "competition"]:
             competitive_result = industry_report_search(market_segment, "competitive")
             results["competitive_landscape"] = competitive_result
-    
+
     except Exception as e:
         logger.error(f"Error in comprehensive market research: {e}")
-        return f"Comprehensive market research failed for {market_segment}: {str(e)}"
-    
+        return f"Comprehensive market research failed for {market_segment}: {e!s}"
+
     # Format consolidated results
     formatted_results = []
     for area, result in results.items():
         if result:
             formatted_results.append(f"## {area.replace('_', ' ').title()}\n\n{result}")
-    
+
     return "\n\n---\n\n".join(formatted_results) if formatted_results else f"No comprehensive market research data found for {market_segment}"
 
 
 # Export the market research tools
 __all__ = [
-    'market_size_validation_search',
+    'comprehensive_market_research',
+    'funding_validation_search',
     'industry_benchmark_search',
     'industry_report_search',
     'kpi_validation_search',
-    'funding_validation_search',
-    'comprehensive_market_research'
+    'market_size_validation_search'
 ]
 
 
@@ -352,41 +351,41 @@ def industry_specific_search(industry: str, search_type: str, query_context: str
         Industry-specific search results with enhanced relevance
     """
     industry_lower = industry.lower()
-    
+
     # Get industry-specific configuration
     if industry_lower not in INDUSTRY_SEARCH_STRATEGIES:
         # Fallback to generic search
         return industry_report_search(industry, search_type)
-    
+
     industry_config = INDUSTRY_SEARCH_STRATEGIES[industry_lower]
-    
+
     # Build specialized queries based on industry and search type
     specialized_queries = []
-    
+
     if search_type == "regulatory":
         for reg_term in industry_config["regulatory_terms"][:3]:
             specialized_queries.append(f"{industry} {reg_term} compliance requirements 2024")
             specialized_queries.append(f"{reg_term} impact {industry} industry")
-    
+
     elif search_type == "competitive":
         for keyword in industry_config["keywords"][:2]:
             specialized_queries.append(f"{keyword} competitive landscape analysis")
             specialized_queries.append(f"{keyword} market leaders companies")
-    
+
     elif search_type == "trends":
         for keyword in industry_config["keywords"][:2]:
             specialized_queries.append(f"{keyword} trends 2024 emerging technologies")
             specialized_queries.append(f"{keyword} future outlook predictions")
-    
+
     else:  # market_analysis
         for keyword in industry_config["keywords"][:2]:
             specialized_queries.append(f"{keyword} market size analysis report")
             specialized_queries.append(f"{keyword} industry growth forecast")
-    
+
     # Add query context if provided
     if query_context:
         specialized_queries = [f"{query} {query_context}" for query in specialized_queries]
-    
+
     # Execute specialized searches
     results = []
     for query in specialized_queries[:4]:  # Limit to 4 queries for performance
@@ -399,7 +398,7 @@ def industry_specific_search(industry: str, search_type: str, query_context: str
         except Exception as e:
             logger.warning(f"Failed specialized search '{query}': {e}")
             continue
-    
+
     return "\n\n".join(results) if results else f"No specialized search results found for {industry} {search_type}"
 
 
@@ -415,13 +414,13 @@ def regulatory_change_detection(industry: str, time_period: str = "2024") -> str
         Analysis of regulatory changes and their potential impact
     """
     industry_lower = industry.lower()
-    
+
     # Get industry-specific regulatory terms
     if industry_lower in INDUSTRY_SEARCH_STRATEGIES:
         regulatory_terms = INDUSTRY_SEARCH_STRATEGIES[industry_lower]["regulatory_terms"]
     else:
         regulatory_terms = ["regulation", "compliance", "policy changes"]
-    
+
     # Build regulatory change detection queries
     regulatory_queries = []
     for reg_term in regulatory_terms[:3]:
@@ -430,14 +429,14 @@ def regulatory_change_detection(industry: str, time_period: str = "2024") -> str
             f"new {reg_term} requirements {industry} {time_period}",
             f"{reg_term} updates impact {industry} companies"
         ])
-    
+
     # Add general regulatory change queries
     regulatory_queries.extend([
         f"{industry} regulatory changes {time_period}",
         f"{industry} compliance requirements updates {time_period}",
         f"{industry} policy changes government {time_period}"
     ])
-    
+
     results = []
     for query in regulatory_queries[:5]:  # Limit queries for performance
         try:
@@ -449,7 +448,7 @@ def regulatory_change_detection(industry: str, time_period: str = "2024") -> str
         except Exception as e:
             logger.warning(f"Failed regulatory search '{query}': {e}")
             continue
-    
+
     if results:
         # Add impact assessment
         impact_assessment = _assess_regulatory_impact(industry, results)
@@ -472,23 +471,23 @@ def source_credibility_analysis(search_results: str, query_context: str = "") ->
     """
     # Extract potential sources from search results
     sources_found = _extract_sources_from_results(search_results)
-    
+
     # Calculate credibility scores
     credibility_analysis = []
     overall_credibility = 0.0
     source_count = 0
-    
+
     for source, content in sources_found.items():
         credibility_score = _calculate_source_credibility(source)
         source_count += 1
         overall_credibility += credibility_score
-        
+
         credibility_analysis.append(
             f"**Source: {source}**\n"
             f"Credibility Score: {credibility_score:.2f}\n"
             f"Content: {content[:200]}...\n"
         )
-    
+
     # Calculate overall confidence
     if source_count > 0:
         avg_credibility = overall_credibility / source_count
@@ -496,7 +495,7 @@ def source_credibility_analysis(search_results: str, query_context: str = "") ->
     else:
         avg_credibility = 0.0
         confidence_level = "Low"
-    
+
     # Format analysis results
     analysis_summary = (
         f"**Source Credibility Analysis**\n"
@@ -505,7 +504,7 @@ def source_credibility_analysis(search_results: str, query_context: str = "") ->
         f"Overall Confidence Level: {confidence_level}\n\n"
         f"**Individual Source Analysis:**\n"
     )
-    
+
     return analysis_summary + "\n".join(credibility_analysis)
 
 
@@ -513,29 +512,29 @@ def _apply_source_credibility_weighting(search_result: str, query: str, boost_go
     """Apply credibility weighting to search results."""
     # Extract potential sources from the result
     result_lower = search_result.lower()
-    
+
     # Check for high-credibility sources
     credibility_indicators = []
-    
+
     # Check for Tier 1 research sources
     for source in TIER1_SOURCES:
         if source in result_lower:
             credibility_indicators.append(f"[HIGH CREDIBILITY: {source.upper()}]")
             break
-    
+
     # Check for government sources
     for source in GOVERNMENT_SOURCES:
         if source in result_lower:
             weight = "[VERY HIGH CREDIBILITY: GOVERNMENT SOURCE]" if boost_government else "[HIGH CREDIBILITY: GOVERNMENT]"
             credibility_indicators.append(weight)
             break
-    
+
     # Check for major news sources
     for source in MAJOR_NEWS_SOURCES:
         if source in result_lower:
             credibility_indicators.append(f"[MEDIUM CREDIBILITY: {source.upper()}]")
             break
-    
+
     # Add credibility indicators to the result
     if credibility_indicators:
         return f"{' '.join(credibility_indicators)} {search_result}"
@@ -543,29 +542,29 @@ def _apply_source_credibility_weighting(search_result: str, query: str, boost_go
         return f"[CREDIBILITY: UNVERIFIED] {search_result}"
 
 
-def _extract_sources_from_results(search_results: str) -> Dict[str, str]:
+def _extract_sources_from_results(search_results: str) -> dict[str, str]:
     """Extract potential sources and their content from search results."""
     sources = {}
-    
+
     # Simple extraction based on common patterns
     lines = search_results.split('\n')
     current_source = "Unknown"
     current_content = ""
-    
+
     for line in lines:
         line = line.strip()
         if not line:
             continue
-            
+
         # Check if line contains a source indicator
         line_lower = line.lower()
         source_found = None
-        
+
         for source in TIER1_SOURCES + [s.replace('.', '') for s in GOVERNMENT_SOURCES] + MAJOR_NEWS_SOURCES:
             if source in line_lower:
                 source_found = source
                 break
-        
+
         if source_found:
             if current_content:
                 sources[current_source] = current_content
@@ -573,35 +572,35 @@ def _extract_sources_from_results(search_results: str) -> Dict[str, str]:
             current_content = line
         else:
             current_content += " " + line
-    
+
     # Add the last source
     if current_content:
         sources[current_source] = current_content
-    
+
     return sources
 
 
 def _calculate_source_credibility(source: str) -> float:
     """Calculate credibility score for a source."""
     source_lower = source.lower()
-    
+
     # Check against known high-credibility sources
     if any(tier1 in source_lower for tier1 in TIER1_SOURCES):
         return SOURCE_CREDIBILITY_WEIGHTS["tier1_research"]
-    
+
     if any(gov in source_lower for gov in GOVERNMENT_SOURCES):
         return SOURCE_CREDIBILITY_WEIGHTS["government"]
-    
+
     if any(news in source_lower for news in MAJOR_NEWS_SOURCES):
         return SOURCE_CREDIBILITY_WEIGHTS["major_news"]
-    
+
     # Check for industry associations or trade publications
     if any(term in source_lower for term in ["association", "institute", "foundation"]):
         return SOURCE_CREDIBILITY_WEIGHTS["industry_association"]
-    
+
     if any(term in source_lower for term in ["journal", "publication", "magazine"]):
         return SOURCE_CREDIBILITY_WEIGHTS["trade_publication"]
-    
+
     # Default to unknown credibility
     return SOURCE_CREDIBILITY_WEIGHTS["unknown"]
 
@@ -620,7 +619,7 @@ def _determine_confidence_level(avg_credibility: float, source_count: int) -> st
         return "Very Low"
 
 
-def _assess_regulatory_impact(industry: str, regulatory_results: List[str]) -> str:
+def _assess_regulatory_impact(industry: str, regulatory_results: list[str]) -> str:
     """Assess the potential impact of regulatory changes on an industry."""
     # Simple impact assessment based on keyword analysis
     impact_keywords = {
@@ -628,17 +627,17 @@ def _assess_regulatory_impact(industry: str, regulatory_results: List[str]) -> s
         "medium_impact": ["recommended", "guidance", "best practice", "voluntary", "phased implementation"],
         "low_impact": ["proposed", "under review", "consultation", "draft", "preliminary"]
     }
-    
+
     impact_scores = {"high": 0, "medium": 0, "low": 0}
-    
+
     combined_text = " ".join(regulatory_results).lower()
-    
+
     for impact_level, keywords in impact_keywords.items():
         for keyword in keywords:
             if keyword in combined_text:
                 impact_level_key = impact_level.split("_")[0]
                 impact_scores[impact_level_key] += 1
-    
+
     # Determine overall impact level
     if impact_scores["high"] >= 2:
         overall_impact = "High"
@@ -649,7 +648,7 @@ def _assess_regulatory_impact(industry: str, regulatory_results: List[str]) -> s
     else:
         overall_impact = "Low"
         impact_description = "Minor or proposed regulatory changes with limited immediate impact."
-    
+
     return (
         f"Overall Impact Level: {overall_impact}\n"
         f"Assessment: {impact_description}\n"
@@ -659,13 +658,13 @@ def _assess_regulatory_impact(industry: str, regulatory_results: List[str]) -> s
 
 # Update the __all__ export list
 __all__ = [
-    'market_size_validation_search',
+    'comprehensive_market_research',
+    'funding_validation_search',
     'industry_benchmark_search',
     'industry_report_search',
-    'kpi_validation_search',
-    'funding_validation_search',
-    'comprehensive_market_research',
     'industry_specific_search',
+    'kpi_validation_search',
+    'market_size_validation_search',
     'regulatory_change_detection',
     'source_credibility_analysis'
 ]

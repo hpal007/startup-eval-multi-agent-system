@@ -221,7 +221,7 @@ SAAS_KPI_FRAMEWORK = {
         }
     ],
     "secondary_kpis": [
-        "Gross Revenue Retention", "Net Revenue Retention", "Time to Value", 
+        "Gross Revenue Retention", "Net Revenue Retention", "Time to Value",
         "Feature Adoption Rate", "Support Ticket Volume"
     ]
 }

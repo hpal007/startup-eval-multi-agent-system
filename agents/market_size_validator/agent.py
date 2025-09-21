@@ -10,22 +10,22 @@ import logging
 from google.adk.agents import Agent
 from google.genai import types
 
-from utils.configs import config
-from tools.search_tool import concise_google_search, search_indian_news
 from tools.market_research_tools import (
-    market_size_validation_search,
-    industry_report_search,
+    comprehensive_market_research,
     funding_validation_search,
-    comprehensive_market_research
+    industry_report_search,
+    market_size_validation_search,
 )
 from tools.market_validation_tools import (
-    calculate_market_variance,
     assess_data_recency,
     calculate_confidence_score,
-    identify_discrepancy_flags,
+    calculate_market_variance,
     extract_market_data_from_search,
-    validate_tam_sam_som_logic
+    identify_discrepancy_flags,
+    validate_tam_sam_som_logic,
 )
+from tools.search_tool import concise_google_search, search_indian_news
+from utils.configs import config
 
 MODEL = config.get_model_for_agent("abc_agent")
 
@@ -56,7 +56,7 @@ market_size_validator_agent = Agent(
     description="Validates startup TAM/SAM/SOM claims against authoritative market research sources",
     instruction=prompt.MARKET_SIZE_VALIDATOR_INSTRUCTION,
     tools=[
-        concise_google_search, 
+        concise_google_search,
         search_indian_news,
         market_size_validation_search,
         industry_report_search,
