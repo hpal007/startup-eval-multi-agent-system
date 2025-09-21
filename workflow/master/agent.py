@@ -42,8 +42,8 @@ async def before_agent_callback(callback_context: CallbackContext):
 
 
 # after_agent_callback
-def after_agent_callback(_callback_context: CallbackContext):
-    logger.info("After agent callback executed")
+def after_agent_callback(callback_context: CallbackContext):
+    logger.info(f"After agent callback executed {callback_context.invocation_id}")
 
 
 root_agent = Agent(
