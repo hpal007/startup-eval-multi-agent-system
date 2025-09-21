@@ -120,3 +120,117 @@ def create_session_dir(session_id, user_id, app_name, base_dir="sessions"):
         logger.error(f"Error creating session directory {session_dir}: {e}")
         raise
     return session_dir
+
+
+def get_session_dir(callback_context):
+    if hasattr(callback_context, "_invocation_context"):
+        return create_session_dir(
+            callback_context._invocation_context.session.id,
+            callback_context._invocation_context.session.user_id,
+            callback_context._invocation_context.session.app_name,
+        )
+    return None
+
+
+def remove_ticks(content_text: str) -> str:
+    """Remove markdown code fences from start and end of content."""
+    content_text = content_text.strip()
+    if not content_text:
+        return content_text
+
+    # Split into lines for easier processing
+    lines = content_text.splitlines()
+
+    # Remove opening code fence (``` or ```json, ```markdown, etc.)
+    if lines and lines[0].startswith("```"):
+        lines = lines[1:]
+
+    # Remove closing code fence
+    if lines and lines[-1].strip() == "```":
+        lines = lines[:-1]
+
+    return "\n".join(lines).strip()
+
+
+def save_to_file(filename: str, data: str, session_path: str, file_type: str = "json"):
+    """
+    Save data to a file in the specified session directory.
+
+    Args:
+        filename (str): The filename for the file
+        data (str): The content to save
+        session_path (str): Directory path where the file will be saved
+        file_type (str): File extension (default: "json")
+
+    Raises:
+        OSError: If there's an issue creating directories or writing the file
+        ValueError: If inputs are invalid
+    """
+    if not filename or not isinstance(filename, str):
+        raise ValueError("Filename must be a non-empty string")
+
+    if not session_path:
+        raise ValueError("Session path must be provided")
+
+    # Sanitize filename to be filesystem-safe
+    safe_filename = "".join(
+        c for c in filename if c.isalnum() or c in ("-", "_")
+    ).strip()
+    if not safe_filename:
+        safe_filename = "data"
+
+    # Ensure session directory exists
+    session_dir = Path(session_path)
+    session_dir.mkdir(parents=True, exist_ok=True)
+
+    # Create file path
+    report_file = session_dir / f"{safe_filename}.{file_type}"
+
+    try:
+        with open(report_file, "w", encoding="utf-8") as fp:
+            fp.write(str(data) if data is not None else "")
+
+        logger.info(f"✅ Data saved successfully to: {report_file}")
+        return str(report_file)
+
+    except OSError as e:
+        logger.error(f"❌ Failed to save data to {report_file}: {e}")
+        raise
+
+
+def save_state_to_file(
+    context: CallbackContext, session_path: str, filename="state", file_type="json"
+):
+    """Save all state data to file using save_to_file."""
+    try:
+        # Get all state data
+        logger.info(f"Saving state data to files in session path: {context.state}")
+        state_data = dict(context.state.to_dict())
+        logger.info(f"Dict data to files in session path: {state_data}")
+
+        for key, value in state_data.items():
+            logger.info(f"State key: {key}, Value type: {type(value)}")
+            save_to_file(
+                filename=f"{filename}_{key}",
+                data=value,
+                session_path=session_path,
+                file_type=file_type,
+            )
+
+        logger.info("✅ State data saved successfully")
+        return True
+    except Exception as e:
+        logger.error(f"❌ Failed to save state data: {e}")
+        return False
+
+
+# save llm_response to file
+def save_llm_response_to_file(llm_content, session_path: str, file_type="json"):
+    """Save LlmResponse from a tool execution to a JSON file."""
+    if not llm_content.parts[0].text:
+        logger.warning("No LlmResponse content to save.")
+        return
+
+    save_to_file(
+        "llm_response", llm_content.parts[0].text, session_path, file_type=file_type
+    )

@@ -1,7 +1,11 @@
+from founder_profile_orchestrator.agent import (
+    root_agent as founder_profile_orchestrator_agent,
+)
+
+# from google.adk.agents.llm_agent import Agent
+from google.adk.agents import Agent, SequentialAgent
 from google.adk.agents.callback_context import CallbackContext
-from google.adk.agents.llm_agent import Agent
 from google.adk.tools import FunctionTool
-from google.adk.tools.agent_tool import AgentTool
 
 from agents.process_pdf.agent import pdf_processor_agent
 from tools.file_tool import upload_tool
@@ -46,13 +50,25 @@ def after_agent_callback(callback_context: CallbackContext):
     logger.info(f"After agent callback executed {callback_context.invocation_id}")
 
 
+# Main founder evaluation pipeline
+startup_evaluation_pipeline = SequentialAgent(
+    name="startup_evaluation_pipeline",
+    description="Processes startup pitch documents and generates comprehensive founder team evaluations",
+    sub_agents=[
+        pdf_processor_agent,  # Extract and process pitch deck content
+        founder_profile_orchestrator_agent,  # Analyze founders and generate team report
+    ],
+)
+
+
 root_agent = Agent(
     model=MODEL,
     name="master_agent",
-    description="A helpful assistant for file processing and user questions.",
-    instruction="Answer user questions to the best of your knowledge you have access to the user files using using tool `list_user_files_py`. Use them if relevant.",
+    description="Master orchestrator for startup evaluation system - processes pitch decks and generates founder assessments.",
+    instruction="Process startup pitch documents to evaluate founder teams. Upload files using available tools, then analyze founder profiles and generate comprehensive evaluation reports.",
     before_agent_callback=before_agent_callback,
     after_agent_callback=after_agent_callback,
-    tools=[FunctionTool(list_user_files_py), AgentTool(pdf_processor_agent)],
+    tools=[FunctionTool(list_user_files_py)],
+    sub_agents=[startup_evaluation_pipeline],
     include_contents="default",
 )

@@ -15,15 +15,15 @@ from google.adk.tools import FunctionTool
 from google.adk.tools.tool_context import ToolContext
 
 from tools.file_tool import upload_tool
-from tools.pdf_tool import (
+from tools.pdf_tool import process_pdf_with_llm
+from utils import save_to_state
+from utils.configs import config
+from utils.helper import (
+    check_uploaded_pdf,
     get_session_dir,
-    process_pdf_with_llm,
     save_llm_response_to_file,
     save_state_to_file,
-    save_to_state,
 )
-from utils.configs import config
-from utils.helper import check_uploaded_pdf
 from utils.logging_config import log_callback_event
 
 from . import prompt
@@ -58,7 +58,12 @@ def data_consolidation_after_callback(
         )
 
     if callback_context.state:
-        save_state_to_file(callback_context, get_session_dir(callback_context))
+        save_state_to_file(
+            context=callback_context,
+            session_path=get_session_dir(callback_context),
+            filename="process_pdf_agent",
+            file_type="json",
+        )
 
     elif llm_response.error_message:
         print(

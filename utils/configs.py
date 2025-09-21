@@ -1,9 +1,13 @@
+import logging
 import os
+from typing import Any
 
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 
 class Config:
@@ -59,6 +63,34 @@ class Config:
             raise ValueError(
                 f"Missing required environment variables: {', '.join(required_configs)}"
             )
+
+    @classmethod
+    def get_config_value(
+        cls, key: str, default: Any = None, type_cast: type = str
+    ) -> Any:
+        """
+        Get a configuration value from environment variables with type casting.
+
+        Args:
+            key: Environment variable key
+            default: Default value if not found
+            type_cast: Type to cast the value to
+
+        Returns:
+            Configuration value
+        """
+        value = os.environ.get(key, default)
+        if value is not None and type_cast != str:
+            try:
+                if type_cast == bool:
+                    return str(value).lower() in ("true", "1", "yes", "on")
+                return type_cast(value)
+            except (ValueError, TypeError):
+                logger.warning(
+                    f"Could not cast {key}='{value}' to {type_cast.__name__}, using default"
+                )
+                return default
+        return value
 
 
 # Create a global config instance

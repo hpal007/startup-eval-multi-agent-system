@@ -4,26 +4,13 @@ import json
 from pathlib import Path
 
 import fitz  # PyMuPDF
-from google.adk.agents.callback_context import CallbackContext
-from google.adk.tools.tool_context import ToolContext
 from google.genai import Client
 from PIL import Image
 
 from utils.configs import config
-from utils.helper import create_session_dir
 from utils.logging_config import get_logger
 
 logger = get_logger(__name__)
-
-
-def get_session_dir(callback_context):
-    if hasattr(callback_context, "_invocation_context"):
-        return create_session_dir(
-            callback_context._invocation_context.session.id,
-            callback_context._invocation_context.session.user_id,
-            callback_context._invocation_context.session.app_name,
-        )
-    return None
 
 
 def process_pdf_page_by_page(pdf_input: str | bytes) -> dict[str, str]:
@@ -144,50 +131,3 @@ def process_pdf_with_llm(pdf_input: str | bytes) -> str:
     except Exception as e:
         logger.error(f"PDF processing failed: {e}")
         return json.dumps({"error": f"PDF processing failed: {e!s}"})
-
-
-def save_to_state(key: str, value, tool_context: ToolContext):
-    tool_context.state[key] = value
-    return True
-
-
-def save_to_file(part: str | int, data: str, session_path: str):
-    """Save results from a tool execution to a JSON file."""
-    report_file = Path(session_path) / f"processed_pdf_part_{part}.json"
-
-    try:
-        with open(report_file, "w") as fp:
-            fp.write(data)
-        logger.info(f"✅ Tool result saved to: {report_file}")
-    except Exception as e:
-        logger.error(f"❌ Failed to save tool result: {e}")
-        raise
-
-
-def save_state_to_file(context: CallbackContext, session_path: str):
-    """Save all state data to file using save_to_file."""
-    try:
-        # Get all state data
-        logger.info(f"Saving state data to files in session path: {context.state}")
-        state_data = dict(context.state.to_dict())
-        logger.info(f"Dict data to files in session path: {state_data}")
-
-        for key, value in state_data.items():
-            logger.info(f"State key: {key}, Value type: {type(value)}")
-            save_to_file(key, value, session_path)
-
-        logger.info("✅ State data saved successfully")
-        return True
-    except Exception as e:
-        logger.error(f"❌ Failed to save state data: {e}")
-        return False
-
-
-# save llm_response to file
-def save_llm_response_to_file(llm_content, session_path: str):
-    """Save LlmResponse from a tool execution to a JSON file."""
-    if not llm_content.parts[0].text:
-        logger.warning("No LlmResponse content to save.")
-        return
-
-    save_to_file("llm_response", llm_content.parts[0].text, session_path)
