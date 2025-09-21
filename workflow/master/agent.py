@@ -42,8 +42,9 @@ async def before_agent_callback(callback_context: CallbackContext):
 
 
 # after_agent_callback
-def after_agent_callback(callback_context: CallbackContext):
+def after_agent_callback(_callback_context: CallbackContext):
     logger.info("After agent callback executed")
+
 
 root_agent = Agent(
     model=MODEL,

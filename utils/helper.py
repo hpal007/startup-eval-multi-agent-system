@@ -100,9 +100,12 @@ def files_to_bytes(file_path, file_type="application/pdf"):
         logger.error(f"Error reading file {file_path}: {e}")
         raise
 
+
 def create_session_dir(session_id, user_id, app_name, base_dir="sessions"):
     project_root = Path(__file__).parent.parent
-    session_dir = os.path.join(project_root, base_dir, f"{user_id}_{session_id}_{app_name}")
+    session_dir = os.path.join(
+        project_root, base_dir, f"{user_id}_{session_id}_{app_name}"
+    )
 
     # Check if path already exists and return if it does
     if os.path.exists(session_dir):
@@ -117,6 +120,3 @@ def create_session_dir(session_id, user_id, app_name, base_dir="sessions"):
         logger.error(f"Error creating session directory {session_dir}: {e}")
         raise
     return session_dir
-
-
-

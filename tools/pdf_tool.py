@@ -15,6 +15,7 @@ from utils.logging_config import get_logger
 
 logger = get_logger(__name__)
 
+
 def get_session_dir(callback_context):
     if hasattr(callback_context, "_invocation_context"):
         return create_session_dir(
@@ -23,6 +24,7 @@ def get_session_dir(callback_context):
             callback_context._invocation_context.session.app_name,
         )
     return None
+
 
 def process_pdf_page_by_page(pdf_input: str | bytes) -> dict[str, str]:
     """
@@ -38,7 +40,6 @@ def process_pdf_page_by_page(pdf_input: str | bytes) -> dict[str, str]:
         logger.info("🔧 Tool-B: Processing PDF page-by-page with LLM")
         client = Client()
         MODEL = config.get_model_for_agent("abc_agent")
-
 
         # Open PDF document
         if isinstance(pdf_input, str):
@@ -81,7 +82,7 @@ def process_pdf_page_by_page(pdf_input: str | bytes) -> dict[str, str]:
                 # Create prompt for text extraction
                 prompt = f"""
                 Extract all text content from this PDF page image (page {page_num + 1}).
-                
+
                 Instructions:
                 - Extract ALL visible text accurately
                 - Maintain structure and formatting where possible
@@ -129,6 +130,7 @@ def process_pdf_page_by_page(pdf_input: str | bytes) -> dict[str, str]:
         logger.error(f"❌ Tool-B error: {e}")
         return {}
 
+
 def process_pdf_with_llm(pdf_input: str | bytes) -> str:
     """
     Tool wrapper: Process PDF and return JSON string.
@@ -143,9 +145,11 @@ def process_pdf_with_llm(pdf_input: str | bytes) -> str:
         logger.error(f"PDF processing failed: {e}")
         return json.dumps({"error": f"PDF processing failed: {e!s}"})
 
+
 def save_to_state(key: str, value, tool_context: ToolContext):
     tool_context.state[key] = value
     return True
+
 
 def save_to_file(part: str | int, data: str, session_path: str):
     """Save results from a tool execution to a JSON file."""
@@ -177,6 +181,7 @@ def save_state_to_file(context: CallbackContext, session_path: str):
     except Exception as e:
         logger.error(f"❌ Failed to save state data: {e}")
         return False
+
 
 # save llm_response to file
 def save_llm_response_to_file(llm_content, session_path: str):

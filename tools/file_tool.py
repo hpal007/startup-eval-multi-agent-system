@@ -23,8 +23,8 @@ class UploadArtifactTool:
     async def run(
         self,
         callback_context,
-        file_path: str = None,
-        file_bytes: bytes = None,
+        file_path: str | None = None,
+        file_bytes: bytes | None = None,
         filename: str = "tool_uploaded.pdf",
     ) -> dict:
         try:

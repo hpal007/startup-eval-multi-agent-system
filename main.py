@@ -100,7 +100,7 @@ async def main():
     print(f"Runner created for agent '{runner.agent.name}'.")
 
     try:
-        session = await session_service.create_session(
+        await session_service.create_session(
             app_name=APP_NAME, user_id=args.user_id, session_id=args.session_id
         )
         print(

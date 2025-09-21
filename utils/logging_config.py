@@ -74,7 +74,13 @@ def get_logger(name: str) -> logging.Logger:
     """
     return logging.getLogger(name)
 
-def log_callback_event(event_type: str, agent_name: str, agent_type: str = "agent", workflow_id: str = None):
+
+def log_callback_event(
+    event_type: str,
+    agent_name: str,
+    agent_type: str = "agent",
+    workflow_id: str | None = None,
+):
     """
     Create a callback function that logs agent events with structured information.
 
@@ -87,30 +93,37 @@ def log_callback_event(event_type: str, agent_name: str, agent_type: str = "agen
     """
     logger = get_logger(f"agents.{agent_name}")
     emoji_map = {
-            ('starting', 'agent'): '🤖',
-            ('starting', 'workflow'): '👑',
-            ('starting', 'tool'): '🔧',
-            ('completed', 'agent'): '✅',
-            ('completed', 'workflow'): '🏁',
-            ('completed', 'tool'): '✅',
-            ('failed', 'agent'): '❌',
-            ('failed', 'workflow'): '💥',
-            ('failed', 'tool'): '🚨'
-        }
+        ("starting", "agent"): "🤖",
+        ("starting", "workflow"): "👑",
+        ("starting", "tool"): "🔧",
+        ("completed", "agent"): "✅",
+        ("completed", "workflow"): "🏁",
+        ("completed", "tool"): "✅",
+        ("failed", "agent"): "❌",
+        ("failed", "workflow"): "💥",
+        ("failed", "tool"): "🚨",
+    }
 
-    emoji = emoji_map.get((event_type, agent_type), '📋')
+    emoji = emoji_map.get((event_type, agent_type), "📋")
 
     context_info = f" (workflow: {workflow_id})" if workflow_id else ""
 
-    if event_type == 'starting':
-            logger.info(f"\n{emoji} {agent_name}: {event_type.title()} {agent_type} execution{context_info}\n")
-    elif event_type == 'completed':
-            logger.info(f"\n{emoji} {agent_name}: {event_type.title()} {agent_type} execution successfully{context_info}\n")
-    elif event_type == 'failed':
-            logger.info(f"\n{emoji} {agent_name}: {event_type.title()} {agent_type} execution with errors{context_info}\n")
+    if event_type == "starting":
+        logger.info(
+            f"\n{emoji} {agent_name}: {event_type.title()} {agent_type} execution{context_info}\n"
+        )
+    elif event_type == "completed":
+        logger.info(
+            f"\n{emoji} {agent_name}: {event_type.title()} {agent_type} execution successfully{context_info}\n"
+        )
+    elif event_type == "failed":
+        logger.info(
+            f"\n{emoji} {agent_name}: {event_type.title()} {agent_type} execution with errors{context_info}\n"
+        )
     else:
-            logger.info(f"\n{emoji} {agent_name}: {event_type} - {agent_type}{context_info}\n")
-
+        logger.info(
+            f"\n{emoji} {agent_name}: {event_type} - {agent_type}{context_info}\n"
+        )
 
 
 # def log_error(component: str, error: Exception, context: str | None = None):
@@ -129,7 +142,6 @@ def log_callback_event(event_type: str, agent_name: str, agent_type: str = "agen
 #         message += f" (Context: {context})"
 
 #     logger.error(message, exc_info=True)
-
 
 
 # def configure_competitor_logging() -> None:

@@ -16,9 +16,9 @@ When you receive ANY message or start a conversation, immediately:
 Always start by calling process_pdf_tool() regardless of user input.
 
 ## Your Task:
-1. **CALL TOOL FIRST**: Always start by calling `process_pdf_tool()` 
+1. **CALL TOOL FIRST**: Always start by calling `process_pdf_tool()`
 2. **Extract PDF Content**: The tool will extract text from each page of the PDF document
-3. **Process and Format**: Clean and format the extracted text content 
+3. **Process and Format**: Clean and format the extracted text content
 4. **Return Structured JSON**: Provide the final result as a JSON object
 
 ## Step-by-Step Process:

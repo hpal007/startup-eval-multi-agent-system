@@ -32,7 +32,8 @@ filename = "file_path.pdf"
 logger = logging.getLogger(__name__)
 MODEL = config.get_model_for_agent("abc_agent")
 
-async def data_consolidation_setup_callback(callback_context, **kwargs):
+
+async def data_consolidation_setup_callback(callback_context, **_kwargs):
     """Setup callback for data consolidation agent."""
     logger.info("🚀 PDF Processor Agent SETUP - Starting execution")
 
@@ -45,31 +46,37 @@ async def data_consolidation_setup_callback(callback_context, **kwargs):
 
     log_callback_event(event_type="starting", agent_name="pdf_processor_agent")
 
-def data_consolidation_after_callback(callback_context: CallbackContext, llm_response: LlmResponse):
-    log_callback_event(
-        event_type="completed", agent_name="data_consolidation_agent"
-    )
+
+def data_consolidation_after_callback(
+    callback_context: CallbackContext, llm_response: LlmResponse
+):
+    log_callback_event(event_type="completed", agent_name="data_consolidation_agent")
     # Save LlmResponse content and state to files
     if llm_response.content and llm_response.content.parts:
-        save_llm_response_to_file(llm_response.content, get_session_dir(callback_context))
+        save_llm_response_to_file(
+            llm_response.content, get_session_dir(callback_context)
+        )
 
     if callback_context.state:
         save_state_to_file(callback_context, get_session_dir(callback_context))
 
     elif llm_response.error_message:
-        print(f"[Callback] Inspected response: Contains error '{llm_response.error_message}'. No modification.")
+        print(
+            f"[Callback] Inspected response: Contains error '{llm_response.error_message}'. No modification."
+        )
         return None
     else:
         print("[Callback] Inspected response: Empty LlmResponse.")
-        return None # Nothing to modify
+        return None  # Nothing to modify
+
 
 async def process_pdf_tool(tool_context: ToolContext) -> str:
     """
     Processes PDF documents page-by-page and extracts text content.
-    
+
     This tool loads PDF artifacts and extracts text from each page using OCR/vision models.
     Returns structured JSON with page numbers as keys and extracted text as values.
-    
+
     Returns:
         JSON string with format: {"1": "page 1 text", "2": "page 2 text", ...}
     """
@@ -94,7 +101,9 @@ async def process_pdf_tool(tool_context: ToolContext) -> str:
             return json.dumps({"error": "No PDF found in context to process"})
 
     except ValueError as e:
-        logger.error(f"Error loading Python artifact: {e}. Is ArtifactService configured?")
+        logger.error(
+            f"Error loading Python artifact: {e}. Is ArtifactService configured?"
+        )
         return json.dumps({"error": f"Artifact loading failed: {e!s}"})
     except Exception as e:
         # Handle potential storage errors
@@ -111,12 +120,11 @@ pdf_processor_agent = Agent(
         "Then processes the extracted text to remove special characters and format it into clean, structured JSON output. "
         "The agent cannot function without calling the tool first - it has no other way to access PDF content."
     ),
-
     instruction=prompt.PDF_PROCESSOR_INSTRUCTION,
     tools=[FunctionTool(process_pdf_tool)],
     before_agent_callback=data_consolidation_setup_callback,
     after_model_callback=data_consolidation_after_callback,
     include_contents="default",
-    output_key="pdf_processor_agent_output"
+    output_key="pdf_processor_agent_output",
 )
 root_agent = pdf_processor_agent
