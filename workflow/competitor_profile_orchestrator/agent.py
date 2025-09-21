@@ -43,6 +43,7 @@ def synthesis_callback(callback_context, llm_response: LlmResponse):
     try:
         if llm_response.content and llm_response.content.parts:
             save_llm_response_to_file(
+                filename="competitor_report_synthesis",
                 llm_content=llm_response.content,
                 session_path=get_session_dir(callback_context),
                 file_type="md",

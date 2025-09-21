@@ -8,6 +8,9 @@ from tools.file_tool import upload_tool
 from utils.configs import config
 from utils.helper import check_uploaded_pdf, create_session_dir, list_user_files_py
 from utils.logging_config import get_logger
+from workflow.business_kpis_orchestrator.agent import (
+    create_business_kpis_orchestrator,
+)
 from workflow.competitor_profile_orchestrator.agent import (
     create_competitor_profile_orchestrator,
 )
@@ -62,6 +65,7 @@ startup_evaluation_pipeline = SequentialAgent(
         create_pdf_processor_agent(),  # Extract and process pitch deck content
         create_founder_profile_orchestrator(),  # Analyze founders and generate team report
         create_competitor_profile_orchestrator(),  # Analyze competitors and market positioning
+        create_business_kpis_orchestrator(),  # Validate business KPIs and frameworks
     ],
 )
 
