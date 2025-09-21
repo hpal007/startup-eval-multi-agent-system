@@ -39,12 +39,15 @@ def setup_orchestrator_callback(callback_context, **kwargs):
     # Initialize any global state needed for founder verification
 
 
-def synthesis_callback(callback_context: CallbackContext , llm_response: LlmResponse):
+def synthesis_callback(callback_context: CallbackContext, llm_response: LlmResponse | None = None, **kwargs):
     """Callback to synthesize results from all founder analyses."""
     logger.info(
         "\n🤖 founder_report_synthesizer: Synthesizing verification results from all founders\n"
     )
     try:
+        if not llm_response:
+            logger.warning("⚠️ synthesis_callback called without an LlmResponse; skipping save.")
+            return
         if llm_response.content and llm_response.content.parts:
             save_llm_response_to_file(
                 filename="founder_verification_report",

@@ -369,7 +369,7 @@ def analysis_benchmarking_pipeline_callback(callback_context, **kwargs):
     ctx_set(callback_context, "analysis_benchmarking_pipeline_state", pipeline_state)
 
 
-def kpi_report_synthesis_callback(callback_context, llm_response: LlmResponse):
+def kpi_report_synthesis_callback(callback_context, llm_response: LlmResponse | None = None, **kwargs):
     """Callback to synthesize KPI analysis results from all agents."""
     logger.info(
         "\n🤖 kpi_report_synthesizer: Synthesizing KPI analysis results from all agents\n"
@@ -395,6 +395,9 @@ def kpi_report_synthesis_callback(callback_context, llm_response: LlmResponse):
 
     # Save the response to markdown file
     try:
+        if not llm_response:
+            logger.warning("⚠️ kpi_report_synthesis_callback called without an LlmResponse; skipping save.")
+            return
         if llm_response.content and llm_response.content.parts:
             save_llm_response_to_file(
                 filename="business_kpi_report_synthesis",
