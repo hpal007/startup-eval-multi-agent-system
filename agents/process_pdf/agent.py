@@ -116,20 +116,26 @@ async def process_pdf_tool(tool_context: ToolContext) -> str:
         return json.dumps({"error": f"Unexpected error: {e!s}"})
 
 
-pdf_processor_agent = Agent(
-    model=MODEL,
-    name="pdf_processor_agent",
-    description=(
-        "PDF Processing Agent that MUST call process_pdf_tool to extract and format text from PDF documents. "
-        "ALWAYS starts by calling the process_pdf_tool function to load PDF artifacts and extract page-by-page content. "
-        "Then processes the extracted text to remove special characters and format it into clean, structured JSON output. "
-        "The agent cannot function without calling the tool first - it has no other way to access PDF content."
-    ),
-    instruction=prompt.PDF_PROCESSOR_INSTRUCTION,
-    tools=[FunctionTool(process_pdf_tool)],
-    before_agent_callback=data_consolidation_setup_callback,
-    after_model_callback=data_consolidation_after_callback,
-    include_contents="default",
-    output_key="pdf_processor_agent_output",
-)
+def create_pdf_processor_agent():
+    """Create a fresh instance of the PDF processor agent."""
+    return Agent(
+        model=MODEL,
+        name="pdf_processor_agent",
+        description=(
+            "PDF Processing Agent that MUST call process_pdf_tool to extract and format text from PDF documents. "
+            "ALWAYS starts by calling the process_pdf_tool function to load PDF artifacts and extract page-by-page content. "
+            "Then processes the extracted text to remove special characters and format it into clean, structured JSON output. "
+            "The agent cannot function without calling the tool first - it has no other way to access PDF content."
+        ),
+        instruction=prompt.PDF_PROCESSOR_INSTRUCTION,
+        tools=[FunctionTool(process_pdf_tool)],
+        before_agent_callback=data_consolidation_setup_callback,
+        after_model_callback=data_consolidation_after_callback,
+        include_contents="default",
+        output_key="pdf_processor_agent_output",
+    )
+
+
+# Create a default instance for backward compatibility
+pdf_processor_agent = create_pdf_processor_agent()
 root_agent = pdf_processor_agent

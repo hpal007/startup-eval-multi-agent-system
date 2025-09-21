@@ -1,17 +1,21 @@
-from founder_profile_orchestrator.agent import (
-    root_agent as founder_profile_orchestrator_agent,
-)
-
 # from google.adk.agents.llm_agent import Agent
 from google.adk.agents import Agent, SequentialAgent
 from google.adk.agents.callback_context import CallbackContext
 from google.adk.tools import FunctionTool
 
-from agents.process_pdf.agent import pdf_processor_agent
+from agents.process_pdf.agent import create_pdf_processor_agent
 from tools.file_tool import upload_tool
 from utils.configs import config
 from utils.helper import check_uploaded_pdf, create_session_dir, list_user_files_py
 from utils.logging_config import get_logger
+from workflow.competitor_profile_orchestrator.agent import (
+    create_competitor_profile_orchestrator,
+)
+from workflow.founder_profile_orchestrator.agent import (
+    create_founder_profile_orchestrator,
+)
+
+from . import prompt
 
 logger = get_logger(__name__)
 file_path = "/Users/harish/Desktop/se-system/files/test_startup_pitch.pdf"
@@ -55,8 +59,9 @@ startup_evaluation_pipeline = SequentialAgent(
     name="startup_evaluation_pipeline",
     description="Processes startup pitch documents and generates comprehensive founder team evaluations",
     sub_agents=[
-        pdf_processor_agent,  # Extract and process pitch deck content
-        founder_profile_orchestrator_agent,  # Analyze founders and generate team report
+        create_pdf_processor_agent(),  # Extract and process pitch deck content
+        create_founder_profile_orchestrator(),  # Analyze founders and generate team report
+        create_competitor_profile_orchestrator(),  # Analyze competitors and market positioning
     ],
 )
 
@@ -64,8 +69,8 @@ startup_evaluation_pipeline = SequentialAgent(
 root_agent = Agent(
     model=MODEL,
     name="master_agent",
-    description="Master orchestrator for startup evaluation system - processes pitch decks and generates founder assessments.",
-    instruction="Process startup pitch documents to evaluate founder teams. Upload files using available tools, then analyze founder profiles and generate comprehensive evaluation reports.",
+    description="Comprehensive startup evaluation system that processes pitch documents and generates in-depth analysis including PDF content extraction, founder team verification, competitive landscape assessment, and market positioning reports.",
+    instruction=prompt.MASTER_AGENT_PROMPT,
     before_agent_callback=before_agent_callback,
     after_agent_callback=after_agent_callback,
     tools=[FunctionTool(list_user_files_py)],

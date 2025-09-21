@@ -77,86 +77,122 @@ def data_analysis_callback(callback_context, **kwargs):
     )
 
 
-query_generator_agent = Agent(
-    model=MODEL,
-    name="query_generator",
-    description="Generates targeted search queries for founder claim verification with India-specific focus",
-    instruction=prompt.QUERY_GENERATOR_INSTRUCTION,
-    tools=[FunctionTool(concise_google_search), FunctionTool(search_indian_news)],
-    before_agent_callback=query_generation_callback,
-    generate_content_config=types.GenerateContentConfig(
-        temperature=config.TEMPERATURE,
-    ),
-    include_contents="default",
-)
+def create_query_generator_agent():
+    """Create a fresh instance of the query generator agent."""
+    return Agent(
+        model=MODEL,
+        name="query_generator",
+        description="Generates targeted search queries for founder claim verification with India-specific focus",
+        instruction=prompt.QUERY_GENERATOR_INSTRUCTION,
+        tools=[FunctionTool(concise_google_search), FunctionTool(search_indian_news)],
+        before_agent_callback=query_generation_callback,
+        generate_content_config=types.GenerateContentConfig(
+            temperature=config.TEMPERATURE,
+        ),
+        include_contents="default",
+    )
 
-data_analyst_agent = Agent(
-    model=MODEL,
-    name="data_analyst",
-    description="Analyzes founder claims against search results and generates verification KPIs with India-specific assessment",
-    instruction=prompt.DATA_ANALYST_INSTRUCTION,
-    tools=[
-        FunctionTool(comprehensive_founder_search),
-        FunctionTool(concise_google_search),
-        FunctionTool(search_indian_news),
-    ],
-    before_agent_callback=data_analysis_callback,
-    generate_content_config=types.GenerateContentConfig(
-        temperature=config.TEMPERATURE,
-    ),
-    include_contents="default",
-)
+
+query_generator_agent = create_query_generator_agent()
+
+
+def create_data_analyst_agent():
+    """Create a fresh instance of the data analyst agent."""
+    return Agent(
+        model=MODEL,
+        name="data_analyst",
+        description="Analyzes founder claims against search results and generates verification KPIs with India-specific assessment",
+        instruction=prompt.DATA_ANALYST_INSTRUCTION,
+        tools=[
+            FunctionTool(comprehensive_founder_search),
+            FunctionTool(concise_google_search),
+            FunctionTool(search_indian_news),
+        ],
+        before_agent_callback=data_analysis_callback,
+        generate_content_config=types.GenerateContentConfig(
+            temperature=config.TEMPERATURE,
+        ),
+        include_contents="default",
+    )
+
+
+data_analyst_agent = create_data_analyst_agent()
+
+
+def create_verification_pipeline():
+    """Create a fresh instance of the verification pipeline."""
+    return SequentialAgent(
+        name="verification_pipeline",
+        description="Sequential execution of query generation and analysis for founder verification",
+        sub_agents=[
+            create_query_generator_agent(),  # First generate search queries
+            create_data_analyst_agent(),  # Then analyze results (will use our search tools internally)
+        ],
+        before_agent_callback=verification_pipeline_callback,
+    )
+
 
 # Verification pipeline for sequential processing (simplified)
-verification_pipeline = SequentialAgent(
-    name="verification_pipeline",
-    description="Sequential execution of query generation and analysis for founder verification",
-    sub_agents=[
-        query_generator_agent,  # First generate search queries
-        data_analyst_agent,  # Then analyze results (will use our search tools internally)
-    ],
-    before_agent_callback=verification_pipeline_callback,
-)
+verification_pipeline = create_verification_pipeline()
+
+
+def create_founder_report_synthesizer():
+    """Create a fresh instance of the founder report synthesizer."""
+    return Agent(
+        model=MODEL,
+        name="founder_report_synthesizer",
+        description="Synthesizes individual founder verification results into a comprehensive team assessment report",
+        instruction=prompt.REPORT_SYNTHESIS_INSTRUCTION,
+        after_model_callback=synthesis_callback,
+        generate_content_config=types.GenerateContentConfig(
+            temperature=config.TEMPERATURE,  # Use configured temperature
+        ),
+        include_contents="default",
+    )
+
 
 # Report synthesis agent
-founder_report_synthesizer = Agent(
-    model=MODEL,
-    name="founder_report_synthesizer",
-    description="Synthesizes individual founder verification results into a comprehensive team assessment report",
-    instruction=prompt.REPORT_SYNTHESIS_INSTRUCTION,
-    after_model_callback=synthesis_callback,
-    generate_content_config=types.GenerateContentConfig(
-        temperature=config.TEMPERATURE,  # Use configured temperature
-    ),
-    include_contents="default",
-)
+founder_report_synthesizer = create_founder_report_synthesizer()
+
+
+def create_founder_evaluation_pipeline():
+    """Create a fresh instance of the founder evaluation pipeline."""
+    return SequentialAgent(
+        name="founder_evaluation_pipeline",
+        description="Sequential execution of founder verification, analysis, and report generation",
+        sub_agents=[
+            create_verification_pipeline(),  # First verify all founders
+            create_founder_report_synthesizer(),  # Then synthesize team report
+        ],
+    )
+
 
 # Main founder evaluation pipeline
-founder_evaluation_pipeline = SequentialAgent(
-    name="founder_evaluation_pipeline",
-    description="Sequential execution of founder verification, analysis, and report generation",
-    sub_agents=[
-        verification_pipeline,  # First verify all founders
-        founder_report_synthesizer,  # Then synthesize team report
-    ],
-)
+founder_evaluation_pipeline = create_founder_evaluation_pipeline()
 
 
 # Root orchestrator agent
-root_agent = Agent(
-    model=MODEL,
-    name="founder_profile_orchestrator",
-    description=(
-        "Main orchestrator for founding team verification and analysis specialized for Indian startups. "
-        "Coordinates India-specific query generation, multi-source search execution (Google + News API), "
-        "comprehensive claim verification, and team assessment reporting with India-specific KPIs."
-    ),
-    instruction=prompt.ORCHESTRATOR_INSTRUCTION,
-    planner=PlanReActPlanner(),
-    sub_agents=[founder_evaluation_pipeline],
-    before_agent_callback=setup_orchestrator_callback,
-    generate_content_config=types.GenerateContentConfig(
-        temperature=config.TEMPERATURE,
-    ),
-    include_contents="default",
-)
+def create_founder_profile_orchestrator():
+    """Create a fresh instance of the founder profile orchestrator agent."""
+    return Agent(
+        model=MODEL,
+        name="founder_profile_orchestrator",
+        description=(
+            "Main orchestrator for founding team verification and analysis specialized for Indian startups. "
+            "Coordinates India-specific query generation, multi-source search execution (Google + News API), "
+            "comprehensive claim verification, and team assessment reporting with India-specific KPIs."
+        ),
+        instruction=prompt.ORCHESTRATOR_INSTRUCTION,
+        planner=PlanReActPlanner(),
+        sub_agents=[create_founder_evaluation_pipeline()],
+        before_agent_callback=setup_orchestrator_callback,
+        generate_content_config=types.GenerateContentConfig(
+            temperature=config.TEMPERATURE,
+        ),
+        include_contents="default",
+    )
+
+
+# Create a default instance for backward compatibility
+founder_profile_agent = create_founder_profile_orchestrator()
+# root_agent = founder_profile_agent
