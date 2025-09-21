@@ -8,6 +8,7 @@ It orchestrates query generation, search execution, analysis agents, and report 
 import logging
 
 from google.adk.agents import Agent, SequentialAgent
+from google.adk.agents.callback_context import CallbackContext
 from google.adk.models import LlmResponse
 from google.adk.planners import PlanReActPlanner
 from google.adk.tools import FunctionTool
@@ -38,7 +39,7 @@ def setup_orchestrator_callback(callback_context, **kwargs):
     # Initialize any global state needed for founder verification
 
 
-def synthesis_callback(callback_context, llm_response: LlmResponse):
+def synthesis_callback(callback_context: CallbackContext , llm_response: LlmResponse):
     """Callback to synthesize results from all founder analyses."""
     logger.info(
         "\n🤖 founder_report_synthesizer: Synthesizing verification results from all founders\n"
@@ -46,6 +47,7 @@ def synthesis_callback(callback_context, llm_response: LlmResponse):
     try:
         if llm_response.content and llm_response.content.parts:
             save_llm_response_to_file(
+                filename="founder_verification_report",
                 llm_content=llm_response.content,
                 session_path=get_session_dir(callback_context),
                 file_type="md",
@@ -186,6 +188,7 @@ def create_founder_profile_orchestrator():
         planner=PlanReActPlanner(),
         sub_agents=[create_founder_evaluation_pipeline()],
         before_agent_callback=setup_orchestrator_callback,
+        after_agent_callback=synthesis_callback,
         generate_content_config=types.GenerateContentConfig(
             temperature=config.TEMPERATURE,
         ),
