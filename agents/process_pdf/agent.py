@@ -54,7 +54,10 @@ def data_consolidation_after_callback(
     # Save LlmResponse content and state to files
     if llm_response.content and llm_response.content.parts:
         save_llm_response_to_file(
-            llm_response.content, get_session_dir(callback_context)
+            filename="process_pdf_agent",
+            llm_content=llm_response.content,
+            session_path=get_session_dir(callback_context),
+            file_type="json",
         )
 
     if callback_context.state:
