@@ -28,7 +28,6 @@ from utils.logging_config import log_callback_event
 
 from . import prompt
 
-filename = "file_path.pdf"
 logger = logging.getLogger(__name__)
 MODEL = config.get_model_for_agent("abc_agent")
 
@@ -40,9 +39,22 @@ async def data_consolidation_setup_callback(callback_context, **_kwargs):
     report_bytes = check_uploaded_pdf(callback_context)
 
     if report_bytes:
-        await upload_tool.run(
-            callback_context, file_bytes=report_bytes, filename=filename
-        )
+        # Create a session-unique filename to avoid collisions
+        try:
+            session_id = None
+            if hasattr(callback_context, "_invocation_context") and getattr(callback_context._invocation_context, "session", None):
+                session_id = callback_context._invocation_context.session.id
+            fname = f"report_{session_id or 'anon'}.pdf"
+        except Exception:
+            fname = "report_uploaded.pdf"
+
+        await upload_tool.run(callback_context, file_bytes=report_bytes, filename=fname)
+        # Optionally store filename in state for later tools to discover
+        try:
+            if hasattr(callback_context, "state"):
+                callback_context.state["uploaded_report_filename"] = fname
+        except Exception:
+            pass
 
     log_callback_event(event_type="starting", agent_name="pdf_processor_agent")
 
@@ -90,11 +102,32 @@ async def process_pdf_tool(tool_context: ToolContext) -> str:
     """
 
     try:
-        # Load the latest version
-        report_artifact = await tool_context.load_artifact(filename=filename)
+        # Load the latest available artifact; prefer session stored filename if available
+        report_artifact = None
+        try:
+            # Try to find uploaded filename in session/tool state
+            candidate_name = None
+            try:
+                candidate_name = getattr(tool_context, "state", {}).get("uploaded_report_filename")
+            except Exception:
+                candidate_name = None
 
-        if report_artifact and report_artifact.inline_data:
-            print(f"Successfully loaded latest Python artifact '{filename}'.")
+            if candidate_name:
+                report_artifact = await tool_context.load_artifact(filename=candidate_name)
+
+            if not report_artifact:
+                # Fallback to listing artifacts and picking the most recent
+                available = await tool_context.list_artifacts()
+                if available:
+                    # Use the last item in the list (assumed latest)
+                    last_name = available[-1]
+                    report_artifact = await tool_context.load_artifact(filename=last_name)
+
+        except Exception as e:
+            logger.warning(f"Could not load artifact by name: {e}")
+
+        if report_artifact and getattr(report_artifact, "inline_data", None):
+            print("Successfully loaded latest Python artifact for PDF processing.")
             print(f"MIME Type: {report_artifact.inline_data.mime_type}")
             print(f"Report size: {len(report_artifact.inline_data.data)} bytes.")
             # Process the report_artifact.inline_data.data (bytes)

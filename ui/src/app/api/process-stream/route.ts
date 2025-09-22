@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    const { fileName, userId = "user_1", sessionId = "session_001" } = await request.json();
+    const { fileName, filePath, userId = "user_1", sessionId = "session_001" } = await request.json();
     
-    if (!fileName) {
-      return NextResponse.json({ error: 'No file name provided' }, { status: 400 });
+    if (!fileName && !filePath) {
+      return NextResponse.json({ error: 'No file name or path provided' }, { status: 400 });
     }
 
     const backendUrl = process.env.BACKEND_URL || 'http://127.0.0.1:8000';
@@ -24,7 +24,9 @@ export async function POST(request: NextRequest) {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              query: `Process the uploaded file: ${fileName}`,
+              query: `Process the uploaded file: ${fileName || filePath}`,
+              filePath: filePath,
+              filename: fileName,
               user_id: userId,
               session_id: sessionId,
               streaming: true

@@ -4,6 +4,7 @@ Minimal working base for backend integration
 """
 
 import asyncio
+import contextlib
 import uuid
 from pathlib import Path
 
@@ -13,7 +14,8 @@ from fastapi.responses import StreamingResponse
 from google.adk.artifacts import InMemoryArtifactService
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
-from google.genai.types import Content, Part
+from google.genai.types import Content
+from google.genai import types
 from pydantic import BaseModel
 
 from workflow.master.agent import root_agent
@@ -84,6 +86,7 @@ async def upload_file(file: UploadFile = File(...)):
         "status": "success",
         "file_id": file_id,
         "filename": unique_filename,
+        "file_path": str(file_path.resolve()),
         "original_name": file.filename,
         "size": len(content),
         "content_type": file.content_type,
@@ -100,17 +103,17 @@ async def process(request: Request):
     from datetime import datetime
 
     try:
-        payload = await request.json()
+        request_payload = await request.json()
     except Exception:
-        payload = {}
+        request_payload = {}
 
     # Support both file-based and direct text queries
-    file_name = payload.get("fileName") or payload.get("filename") or payload.get("file_name")
-    user_query = payload.get("query") or file_name or "No query provided"
+    file_name = request_payload.get("fileName") or request_payload.get("filename") or request_payload.get("file_name")
+    user_query = request_payload.get("query") or file_name or "No query provided"
 
     # Use session_id and user_id for stateful context - demo uses UUID
-    session_id = payload.get("session_id", str(uuid.uuid4()))
-    user_id = payload.get("user_id", "anonymous")
+    session_id = request_payload.get("session_id", str(uuid.uuid4()))
+    user_id = request_payload.get("user_id", "anonymous")
 
     async def event_stream():
         def sse(data: dict) -> bytes:
@@ -122,17 +125,65 @@ async def process(request: Request):
         )
         session.state["query"] = user_query
 
+        # Determine session directory name(s) used by agents on disk
+        sessions_root = Path("sessions")
+        candidate1 = f"{user_id}_session_{session_id}_startup-eval"
+        candidate2 = f"{user_id}_{session_id}_startup-eval"
+        chosen_dir = None
+        try:
+            if (sessions_root / candidate1).exists():
+                chosen_dir = candidate1
+            elif (sessions_root / candidate2).exists():
+                chosen_dir = candidate2
+            else:
+                # prefer candidate1 as default naming
+                chosen_dir = candidate1
+        except Exception:
+            chosen_dir = candidate1
+
+        # Send an initial SSE with session directory info so UI can poll exact path
+        yield sse({
+            "type": "session_info",
+            "session_dirname": chosen_dir,
+            "session_path": str((sessions_root / chosen_dir).resolve()),
+        })
+
         # Bridge runner.run (may be a sync generator) to async using a queue
         queue: asyncio.Queue[object] = asyncio.Queue()
 
         def run_sync():
             try:
+                # Build message parts, include file bytes if available
+                parts = [types.Part(text=user_query)]
+
+                incoming_file_path = request_payload.get("filePath") or request_payload.get("file_path")
+                if incoming_file_path:
+                    try:
+                        p = Path(incoming_file_path)
+                        if p.exists():
+                            data = p.read_bytes()
+                            parts.append(types.Part.from_bytes(data=data, mime_type="application/pdf"))
+                    except Exception:
+                        # Ignore read errors and continue without inline data
+                        pass
+                else:
+                    # Fallback: resolve by filename in UPLOAD_DIR
+                    if file_name:
+                        candidate = UPLOAD_DIR / file_name
+                        if candidate.exists():
+                            try:
+                                data = candidate.read_bytes()
+                                parts.append(types.Part.from_bytes(data=data, mime_type="application/pdf"))
+                            except Exception:
+                                pass
+
                 for event in runner.run(
                     user_id=user_id,
                     session_id=session_id,
-                    new_message=Content(parts=[Part(text=user_query)])
+                    new_message=Content(parts=parts),
                 ):
                     queue.put_nowait(("event", event))
+
                 queue.put_nowait(("done", None))
             except Exception as e:
                 queue.put_nowait(("error", e))
@@ -142,15 +193,42 @@ async def process(request: Request):
         fut = loop.run_in_executor(None, run_sync)
 
         while True:
-            item_type, payload = await queue.get()
+            item_type, qpayload = await queue.get()
             if item_type == "event":
-                event = payload
+                event = qpayload
                 try:
                     is_final = getattr(event, "is_final_response", lambda: False)()
                     event_type = "final" if is_final else "progress"
+
+                    # Safely extract text content from event parts. If the first available
+                    # part has `.text`, use it. If it has `inline_data` (binary), summarize
+                    # instead of dumping the bytes to the SSE stream.
+                    content_text = None
+                    try:
+                        if hasattr(event, "content") and getattr(event.content, "parts", None):
+                            for p in event.content.parts:
+                                if getattr(p, "text", None):
+                                    content_text = p.text
+                                    break
+                                if getattr(p, "inline_data", None):
+                                    inline = p.inline_data
+                                    size = len(inline.data) if getattr(inline, "data", None) else None
+                                    mime = getattr(inline, "mime_type", None)
+                                    content_text = f"[attached file: {size} bytes, mime={mime}]"
+                                    break
+                    except Exception:
+                        content_text = None
+
+                    if content_text is None:
+                        # Fallback to a concise string representation
+                        try:
+                            content_text = str(event.content)
+                        except Exception:
+                            content_text = "<unserializable event content>"
+
                     yield sse({
                         "type": event_type,
-                        "content": getattr(event.content.parts[0], "text", str(event.content)),
+                        "content": content_text,
                         "timestamp": datetime.utcnow().isoformat(),
                         "file": file_name if is_final else None,
                     })
@@ -158,16 +236,14 @@ async def process(request: Request):
                 except Exception as e:
                     yield sse({"type": "error", "content": f"Event handling error: {e}"})
             elif item_type == "error":
-                yield sse({"type": "error", "content": str(payload)})
+                yield sse({"type": "error", "content": str(qpayload)})
                 break
             elif item_type == "done":
                 break
 
         # Ensure background future completes
-        try:
+        with contextlib.suppress(Exception):
             await fut
-        except Exception:
-            pass
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 
