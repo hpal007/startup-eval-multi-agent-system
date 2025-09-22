@@ -1,121 +1,259 @@
-import os
+"""
+FastAPI server for Startup Evaluation Multi-Agent System
+Minimal working base for backend integration
+"""
+
 import asyncio
-import base64
-import io
-from PIL import Image
-from dotenv import load_dotenv
-import argparse
-from google.genai import types
+import contextlib
+import uuid
+from pathlib import Path
 
-from google.adk.sessions import InMemorySessionService
-from google.adk.artifacts import InMemoryArtifactService 
+from fastapi import FastAPI, File, HTTPException, Request, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
+from google.adk.artifacts import InMemoryArtifactService
 from google.adk.runners import Runner
+from google.adk.sessions import InMemorySessionService
+from google.genai.types import Content
+from google.genai import types
+from pydantic import BaseModel
 
-from agents.abc_agent.agent import root_agent
+from workflow.master.agent import root_agent
 
-# Load environment variables from .env file
-load_dotenv()
+app = FastAPI(
+    title="Startup Evaluation API",
+    description="Multi-agent system for startup pitch analysis",
+    version="1.0.0"
+)
 
-APP_NAME = "chatgpt_agentic_clone_app"
-USER_ID = "user_1"
-SESSION_ID = "session_001"
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-async def call_agent_async(query: str, runner, user_id, session_id):
-  """Sends a query to the agent and prints the final response."""
+UPLOAD_DIR = Path("uploaded")
+UPLOAD_DIR.mkdir(exist_ok=True)
 
-  print(f"\n>>> User Query: {query}")
 
-  # Prepare the user's message in ADK format
-  content = types.Content(role='user', parts=[types.Part(text=query)])
+session_service = InMemorySessionService()
+artifact_service = InMemoryArtifactService()
+runner = Runner(agent=root_agent, app_name="startup-eval", session_service=session_service, artifact_service=artifact_service)
 
-  final_response_text = "Agent did not produce a final response." # Default
 
-  # Key Concept: run_async executes the agent logic and yields Events.
-  # We iterate through events to find the final answer.
-  async for event in runner.run_async(user_id=user_id, session_id=session_id, new_message=content):
-      # You can uncomment the line below to see *all* events during execution
-      # print(f"  [Event] Author: {event.author}, Type: {type(event).__name__}, Final: {event.is_final_response()}, Content: {event.content}")
 
-      # Key Concept: is_final_response() marks the concluding message for the turn.
-      if event.is_final_response():
-          if event.content and event.content.parts:
-             # Assuming text response in the first part
-             final_response_text = event.content.parts[0].text
-          elif event.actions and event.actions.escalate: # Handle potential errors/escalations
-             final_response_text = f"Agent escalated: {event.error_message or 'No specific message.'}"
-          # Add more checks here if needed (e.g., specific error codes)
-          break # Stop processing events once the final response is found
+class HealthResponse(BaseModel):
+    status: str
+    message: str
+    version: str = "1.0.0"
 
-  print(f"<<< Agent Response: {final_response_text}")
+@app.get("/", response_model=HealthResponse)
+async def root():
+    return HealthResponse(
+        status="ok",
+        message="Startup Evaluation Multi-Agent System API"
+    )
 
-async def interactive_session(runner, user_id, session_id):
-    """Run an interactive session with the agent."""
-    print("Type 'exit' or 'quit' to end the session.")
-    print("Example commands:")
-    print(" - General knowledge: 'Who was Marie Curie?', 'How does photosynthesis work?'")
-    print(" - Current info: 'What's the weather in London right now?', 'Latest news about AI'")
-    print(" - Web extraction: 'Extract content from https://example.com'")
-    print(" - Research: 'Do deep research on quantum computing advances'")
-    print(" - Image: 'Generate an image of a cat playing piano'")
-    print("========================================")
+@app.get("/health", response_model=HealthResponse)
+async def health_check():
+    return HealthResponse(
+        status="healthy",
+        message="Service is running properly"
+    )
 
-    while True:
+@app.post("/upload")
+async def upload_file(file: UploadFile = File(...)):
+    allowed_types = {
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "text/plain"
+    }
+    if file.content_type not in allowed_types:
+        raise HTTPException(
+            status_code=400,
+            detail=f"File type {file.content_type} not supported. Allowed types: PDF, DOC, DOCX, TXT"
+        )
+    file_id = str(uuid.uuid4())
+    unique_filename = f"{file_id}_{file.filename}"
+    file_path = UPLOAD_DIR / unique_filename
+    content = await file.read()
+    with open(file_path, "wb") as f:
+        f.write(content)
+    return {
+        "status": "success",
+        "file_id": file_id,
+        "filename": unique_filename,
+        "file_path": str(file_path.resolve()),
+        "original_name": file.filename,
+        "size": len(content),
+        "content_type": file.content_type,
+        "message": "File uploaded successfully"
+    }
+
+@app.post("/process")
+async def process(request: Request):
+    """
+    Streams ADK agent events/results back to frontend as server-sent events.
+    Expects payload JSON with 'query' or file info.
+    """
+    import json
+    from datetime import datetime
+
+    try:
+        request_payload = await request.json()
+    except Exception:
+        request_payload = {}
+
+    # Support both file-based and direct text queries
+    file_name = request_payload.get("fileName") or request_payload.get("filename") or request_payload.get("file_name")
+    user_query = request_payload.get("query") or file_name or "No query provided"
+
+    # Use session_id and user_id for stateful context - demo uses UUID
+    session_id = request_payload.get("session_id", str(uuid.uuid4()))
+    user_id = request_payload.get("user_id", "anonymous")
+
+    async def event_stream():
+        def sse(data: dict) -> bytes:
+            return f"data: {json.dumps(data)}\n\n".encode()
+
+        # ADK session and state management
+        session = await session_service.create_session(
+            app_name="startup-eval", user_id=user_id, session_id=session_id
+        )
+        session.state["query"] = user_query
+
+        # Determine session directory name(s) used by agents on disk
+        sessions_root = Path("sessions")
+        candidate1 = f"{user_id}_session_{session_id}_startup-eval"
+        candidate2 = f"{user_id}_{session_id}_startup-eval"
+        chosen_dir = None
         try:
-            user_input = input("\nYou: ").strip()
-            if user_input.lower() in ["exit", "quit"]:
-                print("Ending session. Goodbye!")
+            if (sessions_root / candidate1).exists():
+                chosen_dir = candidate1
+            elif (sessions_root / candidate2).exists():
+                chosen_dir = candidate2
+            else:
+                # prefer candidate1 as default naming
+                chosen_dir = candidate1
+        except Exception:
+            chosen_dir = candidate1
+
+        # Send an initial SSE with session directory info so UI can poll exact path
+        yield sse({
+            "type": "session_info",
+            "session_dirname": chosen_dir,
+            "session_path": str((sessions_root / chosen_dir).resolve()),
+        })
+
+        # Bridge runner.run (may be a sync generator) to async using a queue
+        queue: asyncio.Queue[object] = asyncio.Queue()
+
+        def run_sync():
+            try:
+                # Build message parts, include file bytes if available
+                parts = [types.Part(text=user_query)]
+
+                incoming_file_path = request_payload.get("filePath") or request_payload.get("file_path")
+                if incoming_file_path:
+                    try:
+                        p = Path(incoming_file_path)
+                        if p.exists():
+                            data = p.read_bytes()
+                            parts.append(types.Part.from_bytes(data=data, mime_type="application/pdf"))
+                    except Exception:
+                        # Ignore read errors and continue without inline data
+                        pass
+                else:
+                    # Fallback: resolve by filename in UPLOAD_DIR
+                    if file_name:
+                        candidate = UPLOAD_DIR / file_name
+                        if candidate.exists():
+                            try:
+                                data = candidate.read_bytes()
+                                parts.append(types.Part.from_bytes(data=data, mime_type="application/pdf"))
+                            except Exception:
+                                pass
+
+                for event in runner.run(
+                    user_id=user_id,
+                    session_id=session_id,
+                    new_message=Content(parts=parts),
+                ):
+                    queue.put_nowait(("event", event))
+
+                queue.put_nowait(("done", None))
+            except Exception as e:
+                queue.put_nowait(("error", e))
+
+        loop = asyncio.get_event_loop()
+        # Run the sync runner in a thread
+        fut = loop.run_in_executor(None, run_sync)
+
+        while True:
+            item_type, qpayload = await queue.get()
+            if item_type == "event":
+                event = qpayload
+                try:
+                    is_final = getattr(event, "is_final_response", lambda: False)()
+                    event_type = "final" if is_final else "progress"
+
+                    # Safely extract text content from event parts. If the first available
+                    # part has `.text`, use it. If it has `inline_data` (binary), summarize
+                    # instead of dumping the bytes to the SSE stream.
+                    content_text = None
+                    try:
+                        if hasattr(event, "content") and getattr(event.content, "parts", None):
+                            for p in event.content.parts:
+                                if getattr(p, "text", None):
+                                    content_text = p.text
+                                    break
+                                if getattr(p, "inline_data", None):
+                                    inline = p.inline_data
+                                    size = len(inline.data) if getattr(inline, "data", None) else None
+                                    mime = getattr(inline, "mime_type", None)
+                                    content_text = f"[attached file: {size} bytes, mime={mime}]"
+                                    break
+                    except Exception:
+                        content_text = None
+
+                    if content_text is None:
+                        # Fallback to a concise string representation
+                        try:
+                            content_text = str(event.content)
+                        except Exception:
+                            content_text = "<unserializable event content>"
+
+                    yield sse({
+                        "type": event_type,
+                        "content": content_text,
+                        "timestamp": datetime.utcnow().isoformat(),
+                        "file": file_name if is_final else None,
+                    })
+                    # IMPORTANT: Do NOT break here; let the runner finish!
+                except Exception as e:
+                    yield sse({"type": "error", "content": f"Event handling error: {e}"})
+            elif item_type == "error":
+                yield sse({"type": "error", "content": str(qpayload)})
+                break
+            elif item_type == "done":
                 break
 
-            await call_agent_async(user_input, runner, user_id, session_id)
+        # Ensure background future completes
+        with contextlib.suppress(Exception):
+            await fut
 
-        except KeyboardInterrupt:
-            print("\nSession interrupted. Goodbye!")
-            break
-        except Exception as e:
-            print(f"Error: {e}")
-
-async def main():
-    parser = argparse.ArgumentParser(description="Run the ChatGPT-like Agentic Clone")
-    parser.add_argument(
-        "--session-id",
-        type=str,
-        default=SESSION_ID,
-        help=f"Session ID (default: {SESSION_ID})",
-    )
-    parser.add_argument(
-        "--user-id", type=str, default=USER_ID, help=f"User ID (default: {USER_ID})"
-    )
-
-    args = parser.parse_args()
-
-    # Session Service for managing conversation history and state
-    session_service = InMemorySessionService()
-    artifact_service = InMemoryArtifactService() 
-
-    # Runner for orchestrating the agent execution
-    runner = Runner(
-        agent=root_agent, app_name=APP_NAME, session_service=session_service, artifact_service=artifact_service
-    )
-    print(f"Runner created for agent '{runner.agent.name}'.")
-
-    try:
-        session = await session_service.create_session(
-            app_name=APP_NAME, user_id=args.user_id, session_id=args.session_id
-        )
-        print(f"Session created: App='{APP_NAME}', User='{args.user_id}', Session='{args.session_id}'")
-    except Exception as e:
-        print(f"Warning: Could not create session: {e}")
-        print("Session will be created automatically during first interaction.")
-
-    # Run interactive session
-    try:
-        await interactive_session(runner, args.user_id, args.session_id)
-    except KeyboardInterrupt:
-        print("\nApplication interrupted. Exiting...")
-    except Exception as e:
-        print(f"Error: {e}")
+    return StreamingResponse(event_stream(), media_type="text/event-stream")
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
-
+    import uvicorn
+    uvicorn.run(
+        "main:app",
+        host="127.0.0.1",
+        port=8000,
+        reload=True,
+        log_level="info"
+    )
