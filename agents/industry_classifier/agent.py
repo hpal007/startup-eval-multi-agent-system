@@ -22,11 +22,11 @@ MODEL = config.get_model_for_agent("abc_agent")
 def industry_taxonomy_matching_tool(startup_description: str, business_model: str) -> dict[str, Any]:
     """
     Advanced tool for matching startup characteristics to industry taxonomy with weighted scoring.
-    
+
     Args:
         startup_description: Description of the startup's business
         business_model: Business model description
-        
+
     Returns:
         Dictionary with industry matching results and confidence scores
     """
@@ -157,11 +157,11 @@ def industry_taxonomy_matching_tool(startup_description: str, business_model: st
 def business_model_analysis_tool(business_model: str, target_customers: str) -> dict[str, Any]:
     """
     Enhanced tool for analyzing business model characteristics and customer segments.
-    
+
     Args:
         business_model: Business model description
         target_customers: Target customer description
-        
+
     Returns:
         Dictionary with comprehensive business model analysis results
     """
@@ -281,13 +281,13 @@ def industry_classification_algorithm(
 ) -> dict[str, Any]:
     """
     Comprehensive industry classification algorithm with confidence scoring.
-    
+
     Args:
         startup_description: Description of the startup's business
         business_model: Business model description
         target_customers: Target customer description
         current_kpis: Current KPI data (optional)
-        
+
     Returns:
         Dictionary with complete classification results and confidence scores
     """

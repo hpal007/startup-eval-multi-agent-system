@@ -38,13 +38,13 @@ def select_industry_kpi_framework(
 ) -> dict:
     """
     Select and customize appropriate KPI framework for the startup.
-    
+
     Args:
         industry_classification: Industry classification results with primary_industry, confidence_score, etc.
         growth_stage: Current growth stage (seed, early, growth, mature)
         business_model: Description of the business model
         current_kpis: Current KPI values provided by the startup
-        
+
     Returns:
         Customized KPI framework with primary and secondary KPIs
     """
@@ -99,11 +99,11 @@ def select_industry_kpi_framework(
 def validate_kpi_framework_completeness(framework: dict, current_kpis: dict) -> dict:
     """
     Validate the completeness and relevance of a KPI framework.
-    
+
     Args:
         framework: KPI framework dictionary
         current_kpis: Available KPI data
-        
+
     Returns:
         Validation results with status and recommendations
     """

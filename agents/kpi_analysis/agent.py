@@ -38,10 +38,10 @@ def kpi_analysis_validation_callback(callback_context, **kwargs):
 def analyze_kpi_performance_tool(startup_data: str) -> str:
     """
     Analyze KPI performance against industry benchmarks.
-    
+
     Args:
         startup_data: JSON string containing startup KPI data and benchmarks
-        
+
     Returns:
         JSON string with performance analysis results
     """
@@ -88,10 +88,10 @@ def analyze_kpi_performance_tool(startup_data: str) -> str:
 def analyze_trends_tool(historical_data: str) -> str:
     """
     Analyze trends in KPI historical data.
-    
+
     Args:
         historical_data: JSON string containing historical KPI data and benchmarks
-        
+
     Returns:
         JSON string with trend analysis results
     """
@@ -113,10 +113,10 @@ def analyze_trends_tool(historical_data: str) -> str:
 def generate_recommendations_tool(analysis_data: str) -> str:
     """
     Generate improvement recommendations based on KPI analysis.
-    
+
     Args:
         analysis_data: JSON string containing performance results and context
-        
+
     Returns:
         JSON string with prioritized recommendations
     """
@@ -144,10 +144,10 @@ def generate_recommendations_tool(analysis_data: str) -> str:
 def identify_advantages_tool(performance_data: str) -> str:
     """
     Identify competitive advantages based on exceptional KPI performance.
-    
+
     Args:
         performance_data: JSON string containing performance results and industry context
-        
+
     Returns:
         JSON string with identified competitive advantages
     """
@@ -169,10 +169,10 @@ def identify_advantages_tool(performance_data: str) -> str:
 def validate_claims_tool(validation_data: str) -> str:
     """
     Validate exceptional performance claims.
-    
+
     Args:
         validation_data: JSON string containing KPI data and benchmarks for validation
-        
+
     Returns:
         JSON string with validation results
     """
@@ -194,10 +194,10 @@ def validate_claims_tool(validation_data: str) -> str:
 def analyze_individual_kpi_tool(kpi_analysis_data: str) -> str:
     """
     Perform detailed analysis of individual KPI performance.
-    
+
     Args:
         kpi_analysis_data: JSON string containing KPI data, historical data, benchmarks, and context
-        
+
     Returns:
         JSON string with comprehensive individual KPI analysis
     """

@@ -10,12 +10,12 @@ def calculate_percentile_ranking(
 ) -> dict[str, Any]:
     """
     Calculate percentile ranking for a KPI value against industry benchmarks.
-    
+
     Args:
         kpi_value: The startup's KPI value
         benchmark_data: Dictionary with percentile benchmarks (p25, p50, p75, etc.)
         kpi_name: Name of the KPI being analyzed
-        
+
     Returns:
         Dictionary with percentile ranking and performance assessment
     """
@@ -105,12 +105,12 @@ def analyze_performance_gaps(
 ) -> dict[str, Any]:
     """
     Analyze performance gaps across multiple KPIs.
-    
+
     Args:
         startup_kpis: Dictionary of startup's KPI values
         kpi_framework: KPI framework with benchmark data
         growth_stage: Current growth stage for appropriate benchmarks
-        
+
     Returns:
         Comprehensive performance gap analysis
     """
@@ -213,12 +213,12 @@ def generate_improvement_recommendations(
 ) -> list[dict[str, Any]]:
     """
     Generate specific improvement recommendations based on performance gaps.
-    
+
     Args:
         performance_gaps: Performance gap analysis results
         industry: Industry classification
         growth_stage: Current growth stage
-        
+
     Returns:
         List of prioritized improvement recommendations
     """
@@ -260,12 +260,12 @@ def calculate_industry_position(
 ) -> dict[str, Any]:
     """
     Calculate startup's position within the industry.
-    
+
     Args:
         overall_score: Overall performance score (0-100)
         kpi_performances: List of individual KPI performances
         industry: Industry classification
-        
+
     Returns:
         Industry position analysis
     """
@@ -553,14 +553,14 @@ def validate_exceptional_performance(
 ) -> dict[str, Any]:
     """
     Validate exceptional performance claims and identify potential competitive advantages.
-    
+
     Args:
         kpi_name: Name of the KPI being validated
         kpi_value: The startup's KPI value
         benchmark_data: Industry benchmark data
         industry: Industry classification
         growth_stage: Current growth stage
-        
+
     Returns:
         Validation results for exceptional performance
     """
@@ -617,13 +617,13 @@ def correlate_market_trends(
 ) -> dict[str, Any]:
     """
     Correlate startup KPI performance with identified market trends.
-    
+
     Args:
         startup_kpis: Dictionary of startup's KPI values
         industry: Industry classification
         market_trends: List of identified market trends
         growth_stage: Current growth stage
-        
+
     Returns:
         Correlation analysis between KPIs and market trends
     """
@@ -677,13 +677,13 @@ def generate_typical_ranges_context(
 ) -> dict[str, Any]:
     """
     Generate context on typical ranges and performance expectations for a KPI.
-    
+
     Args:
         kpi_name: Name of the KPI
         industry: Industry classification
         growth_stage: Current growth stage
         benchmark_data: Industry benchmark data
-        
+
     Returns:
         Comprehensive context on typical ranges and expectations
     """

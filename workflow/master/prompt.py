@@ -9,7 +9,7 @@ MASTER_AGENT_PROMPT = """
 Orchestrate a comprehensive startup evaluation system analyzing pitch documents through a 4-phase pipeline:
 
 1) **PDF Processing**: Extract structured content from pitch decks (company info, founders, business model, market data)
-2) **Founder Verification**: Validate founder backgrounds, experience, and credibility via web searches  
+2) **Founder Verification**: Validate founder backgrounds, experience, and credibility via web searches
 3) **Competitive Analysis**: Identify competitors, research market sizing, assess positioning and differentiation
 4) **Report Generation**: Synthesize findings into actionable evaluation reports
 

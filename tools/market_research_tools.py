@@ -14,11 +14,11 @@ logger = logging.getLogger(__name__)
 def market_size_validation_search(market_segment: str, market_size_type: str = "TAM") -> str:
     """
     Search for market size validation data from authoritative sources.
-    
+
     Args:
         market_segment: The market segment to validate (e.g., "fintech", "edtech")
         market_size_type: Type of market size ("TAM", "SAM", "SOM")
-        
+
     Returns:
         Market size validation data from authoritative sources
     """
@@ -48,11 +48,11 @@ def market_size_validation_search(market_segment: str, market_size_type: str = "
 def industry_benchmark_search(industry: str, kpi_name: str) -> str:
     """
     Search for industry benchmark data for specific KPIs.
-    
+
     Args:
         industry: Industry sector (e.g., "SaaS", "e-commerce", "fintech")
         kpi_name: Name of the KPI to benchmark (e.g., "CAC", "churn rate", "conversion rate")
-        
+
     Returns:
         Industry benchmark data for the specified KPI
     """
@@ -82,11 +82,11 @@ def industry_benchmark_search(industry: str, kpi_name: str) -> str:
 def industry_report_search(industry: str, report_type: str = "market_analysis") -> str:
     """
     Search for comprehensive industry reports and market intelligence.
-    
+
     Args:
         industry: Industry sector to research
         report_type: Type of report ("market_analysis", "trends", "regulatory", "competitive")
-        
+
     Returns:
         Industry report findings and market intelligence
     """
@@ -131,12 +131,12 @@ def industry_report_search(industry: str, report_type: str = "market_analysis") 
 def kpi_validation_search(company_name: str, kpi_name: str, claimed_value: str) -> str:
     """
     Search to validate specific KPI claims against industry data.
-    
+
     Args:
         company_name: Name of the company making the claim
         kpi_name: Name of the KPI being validated
         claimed_value: The claimed KPI value
-        
+
     Returns:
         Validation data for the KPI claim
     """
@@ -174,11 +174,11 @@ def kpi_validation_search(company_name: str, kpi_name: str, claimed_value: str) 
 def funding_validation_search(company_name: str, claimed_funding: str) -> str:
     """
     Search to validate funding claims and financial status.
-    
+
     Args:
         company_name: Name of the company
         claimed_funding: Claimed funding amount or status
-        
+
     Returns:
         Funding validation data from various sources
     """
@@ -216,11 +216,11 @@ def funding_validation_search(company_name: str, claimed_funding: str) -> str:
 def comprehensive_market_research(market_segment: str, research_focus: str = "comprehensive") -> str:
     """
     Perform comprehensive market research combining multiple search strategies.
-    
+
     Args:
         market_segment: Market segment to research
         research_focus: Focus area ("comprehensive", "size", "trends", "competition")
-        
+
     Returns:
         Comprehensive market research findings
     """
@@ -341,12 +341,12 @@ MAJOR_NEWS_SOURCES = [
 def industry_specific_search(industry: str, search_type: str, query_context: str = "") -> str:
     """
     Perform industry-specific search using specialized strategies and keywords.
-    
+
     Args:
         industry: Industry sector (e.g., "fintech", "healthtech", "edtech")
         search_type: Type of search ("market_analysis", "regulatory", "competitive", "trends")
         query_context: Additional context for the search query
-        
+
     Returns:
         Industry-specific search results with enhanced relevance
     """
@@ -405,11 +405,11 @@ def industry_specific_search(industry: str, search_type: str, query_context: str
 def regulatory_change_detection(industry: str, time_period: str = "2024") -> str:
     """
     Detect and analyze regulatory changes impacting specific industries.
-    
+
     Args:
         industry: Industry sector to monitor for regulatory changes
         time_period: Time period to focus on (default: "2024")
-        
+
     Returns:
         Analysis of regulatory changes and their potential impact
     """
@@ -461,11 +461,11 @@ def regulatory_change_detection(industry: str, time_period: str = "2024") -> str
 def source_credibility_analysis(search_results: str, query_context: str = "") -> str:
     """
     Analyze and weight search results based on source credibility.
-    
+
     Args:
         search_results: Raw search results to analyze
         query_context: Context about the search query for better analysis
-        
+
     Returns:
         Credibility analysis with weighted results and confidence scores
     """

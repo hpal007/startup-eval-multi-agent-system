@@ -74,7 +74,7 @@ Provide your research findings in this structured format:
 - **[Competitor Name]**: [Brief description, funding status, key differentiators]
 - **[Competitor Name]**: [Brief description, funding status, key differentiators]
 
-#### Indirect Competitors  
+#### Indirect Competitors
 - **[Competitor Name]**: [Brief description, alternative approach, market position]
 - **[Competitor Name]**: [Brief description, alternative approach, market position]
 

@@ -220,7 +220,7 @@ Your role is to take individual founder analyses and create a unified, coherent 
 - Identify verification patterns and trends
 - Flag any critical verification failures
 
-### 2. Risk Assessment Consolidation  
+### 2. Risk Assessment Consolidation
 - Merge risk assessments from individual founder analyses
 - Identify common risk themes across the team
 - Highlight contradictions that need resolution
