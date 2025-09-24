@@ -16,6 +16,7 @@ from tools.competitor_search_tool import (
     competitor_validation_search,
 )
 from tools.search_tool import concise_google_search, search_indian_news
+
 from utils.configs import config
 
 MODEL = config.get_model_for_agent("abc_agent")

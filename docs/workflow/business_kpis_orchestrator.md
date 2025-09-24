@@ -20,18 +20,18 @@ graph TD
     B --> C[Market Validation Pipeline]
     B --> D[Analysis & Benchmarking Pipeline]
     B --> E[Report Synthesis]
-    
+
     C --> F[Industry Classification]
     C --> G[Market Size Validation]
     C --> H[KPI Framework Selection]
-    
+
     D --> I[Industry Benchmarking]
     D --> J[KPI Analysis]
-    
+
     I --> K[Parallel Processing]
     J --> K
     K --> E
-    
+
     E --> L[Final KPI Report]
 ```
 
@@ -95,7 +95,7 @@ The system uses a sophisticated context management system:
 ```python
 def ctx_get(ctx, key, default=None):
     # Safe accessor for CallbackContext
-    
+
 def ctx_set(ctx, key, value):
     # Safe setter for CallbackContext
 ```

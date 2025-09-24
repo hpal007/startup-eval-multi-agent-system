@@ -34,18 +34,22 @@ def setup_orchestrator_callback(callback_context, **kwargs):
     # Initialize any global state needed for competitor analysis
 
 
-def synthesis_callback(callback_context: CallbackContext, llm_response: LlmResponse | None = None, **kwargs):
+def synthesis_callback(
+    callback_context: CallbackContext, llm_response: LlmResponse | None = None, **kwargs
+):
     """Callback to synthesize results from all competitor analyses."""
     logger.info(
         "\n🤖 competitor_report_synthesizer: Synthesizing verification results from all competitors\n"
     )
     try:
         if not llm_response:
-            logger.warning("⚠️ synthesis_callback called without an LlmResponse; skipping save.")
+            logger.warning(
+                "⚠️ synthesis_callback called without an LlmResponse; skipping save."
+            )
             return
         if llm_response.content and llm_response.content.parts:
             save_llm_response_to_file(
-                filename="competitor_verification_report",
+                filename="cp_llm",
                 llm_content=llm_response.content,
                 session_path=get_session_dir(callback_context),
                 file_type="md",
@@ -55,18 +59,23 @@ def synthesis_callback(callback_context: CallbackContext, llm_response: LlmRespo
     except Exception as e:
         logger.error(f"❌ Error saving LLM response in synthesis_callback: {e}")
 
-
     try:
         if callback_context.state:
             save_state_to_file(
                 context=callback_context,
                 session_path=get_session_dir(callback_context),
-                filename="competitor_verification_report",
+                filename="cp_state",
                 file_type="json",
             )
     except Exception as e:
         logger.error(f"❌ Error saving state in synthesis_callback: {e}")
 
+    # Set the synthesized competitor report in callback context for parent agent access
+    callback_context.synthesized_competitor_report = {
+        "status": "completed",
+        "session_path": get_session_dir(callback_context),
+        "files_saved": ["cp_llm.md", "cp_state.json"],
+    }
 
 
 def analysis_pipeline_callback(callback_context: CallbackContext, **kwargs):

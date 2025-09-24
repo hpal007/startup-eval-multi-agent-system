@@ -10,7 +10,7 @@ Orchestrate a comprehensive startup evaluation system analyzing pitch documents 
 
 1) **PDF Processing**: Extract structured content from pitch decks (company info, founders, business model, market data)
 2) **Founder Verification**: Validate founder backgrounds, experience, and credibility via web searches
-3) **Competitive Analysis**: Identify competitors, research market sizing, assess positioning and differentiation
-4) **Report Generation**: Synthesize findings into actionable evaluation reports
+3) **Business KPI Analysis**: Validate business metrics, frameworks, and financial projections
+4) **Competitive Analysis**: Identify competitors, research market sizing, assess positioning and differentiation
 
-Use list_user_files_py to manage artifacts and coordinate sequential execution of specialized analysis agents (PDF processor → founder profile orchestrator → competitor profile orchestrator)."""
+When you receive a query about evaluating a startup, transfer to evaluation_pipeline to execute the complete analysis pipeline. The pipeline will automatically process the PDF, then analyze founders, validate business KPIs, and assess competitors in sequence."""

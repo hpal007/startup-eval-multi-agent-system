@@ -14,7 +14,12 @@ from google.adk.tools import FunctionTool
 from google.genai import types
 
 from utils.configs import config
-from utils.helper import get_session_dir, save_llm_response_to_file, save_state_to_file
+from utils.helper import (
+    get_session_dir,
+    save_llm_response_to_file,
+    save_state_to_file,
+    save_to_file,
+)
 
 MODEL = config.get_model_for_agent("abc_agent")
 
@@ -38,22 +43,77 @@ def setup_orchestrator_callback(callback_context, **kwargs):
     # Initialize any global state needed for founder verification
 
 
-def synthesis_callback(callback_context: CallbackContext, llm_response: LlmResponse | None = None, **kwargs):
+def synthesis_callback(
+    callback_context: CallbackContext, llm_response: LlmResponse | None = None, **kwargs
+):
     """Callback to synthesize results from all founder analyses."""
     logger.info(
         "\n🤖 founder_report_synthesizer: Synthesizing verification results from all founders\n"
     )
     try:
         if not llm_response:
-            logger.warning("⚠️ synthesis_callback called without an LlmResponse; skipping save.")
+            logger.warning(
+                "⚠️ synthesis_callback called without an LlmResponse; skipping save."
+            )
             return
         if llm_response.content and llm_response.content.parts:
+            # Save the raw LLM response
             save_llm_response_to_file(
-                filename="founder_verification_llm_response",
+                filename="fp_llm",
                 llm_content=llm_response.content,
                 session_path=get_session_dir(callback_context),
                 file_type="md",
             )
+
+            # Extract and save the structured report if it contains one
+            content_text = llm_response.content.parts[0].text
+            if (
+                content_text
+                and "# Comprehensive Founder Profile Verification Report"
+                in content_text
+            ):
+                # Save the structured report as markdown
+                save_to_file(
+                    "founder_verification_report",
+                    content_text,
+                    get_session_dir(callback_context),
+                    file_type="md",
+                )
+
+                # Try to create a basic JSON version (this is a simplified extraction)
+                try:
+                    # Extract key sections from the markdown report
+                    json_report = {
+                        "report_type": "founder_verification",
+                        "content": content_text,
+                        "generated_at": "2025-01-01T00:00:00Z",  # placeholder
+                        "status": "generated",
+                    }
+                    import json
+
+                    save_to_file(
+                        "founder_verification_report",
+                        json.dumps(json_report, indent=2),
+                        get_session_dir(callback_context),
+                        file_type="json",
+                    )
+                except Exception as e:
+                    logger.warning(f"Could not create JSON report: {e}")
+            else:
+                # If no structured report, still save the content as the main report
+                save_to_file(
+                    "founder_verification_report",
+                    content_text,
+                    get_session_dir(callback_context),
+                    file_type="md",
+                )
+
+            # Set the result in the callback context for parent agents to access
+            callback_context.founder_verification_output = {
+                "report_content": content_text,
+                "files_saved": ["founder_verification_report.md", "fp_llm.md"],
+                "timestamp": "2025-01-01T00:00:00Z",
+            }
         else:
             logger.warning("⚠️ No content in LlmResponse to save in synthesis_callback.")
     except Exception as e:
@@ -64,12 +124,11 @@ def synthesis_callback(callback_context: CallbackContext, llm_response: LlmRespo
             save_state_to_file(
                 context=callback_context,
                 session_path=get_session_dir(callback_context),
-                filename="founder_verification_report_state",
+                filename="fp_state",
                 file_type="json",
             )
     except Exception as e:
         logger.error(f"❌ Error saving state in synthesis_callback: {e}")
-
 
 
 def verification_pipeline_callback(callback_context, **kwargs):
@@ -186,6 +245,7 @@ def create_founder_evaluation_pipeline():
 # Main founder evaluation pipeline
 founder_evaluation_pipeline = create_founder_evaluation_pipeline()
 
+
 # Root orchestrator agent
 def create_founder_profile_orchestrator():
     """Create a fresh instance of the founder profile orchestrator agent."""
@@ -208,6 +268,7 @@ def create_founder_profile_orchestrator():
         include_contents="default",
         output_key="founder_verification_output",
     )
+
 
 # Create a default instance for backward compatibility
 founder_profile_agent = create_founder_profile_orchestrator()

@@ -1,0 +1,136 @@
+```json
+{
+  "cover_slide": {
+    "company_name": "Sia",
+    "logo_url": null,
+    "tagline": "Agentic Al for Data Analytics",
+    "contact_information": {
+      "founder_name": null,
+      "email": "karthik.c@datastride.ai",
+      "phone": "+91 87625 25857, +91 84310 42564",
+      "website_url": "https://sianalytics.in, https://datastride.ai/"
+    },
+    "date": null
+  },
+  "company_purpose": {
+    "mission_statement": "Turn data into actionable insights and Al-powered decisions instantly. Unifies data Processes. Ensure org-wide Al readiness & adoption. Built in workflow Intelligence",
+    "vision_statement": "Community driven mass adoption of Sia. Sia evolves to learn user flow and proactively guiding users' actions. Fully autonomous Al agent that drives decisions at leadership levels.",
+    "one_liner": "Agentic Al for Data Analytics"
+  },
+  "problem": {
+    "description": "High cost of data analytics, Dependency on Manual expertise, Fragmented data pipelines",
+    "validation_data": "90% AI Projects Fail, 76% Decisions made through Spreadsheets, 68% Data is not used and remains in data silos, 500% Increase in volume of data generated over the past decade",
+    "context": "Organizations depend on a centralized data team, making the pipeline fragile. Fragmented Supply chain, Talent Shortage, Unsystematic Processes, Security & Privacy Risks, Inconsistent Datasets, Brittle Systems"
+  },
+  "solution": {
+    "product_description": "Sia brings a full data team to everyone across the organization through a Simple Chat Interface",
+    "key_features": "Recommender, Pattern Engine, Auto discovery Visualizations, Rapid Deployment, Data quality No-code model building, Instant Insights, Develop Data Summaries, Build context of Data, Democratization of Al & Data, Context aware insights, Minimized bottlenecks",
+    "value_proposition": "Turn data into actionable insights and Al-powered decisions instantly. Unifies data Processes. Ensure org-wide Al readiness & adoption. Built in workflow Intelligence",
+    "how_it_works": "Simple Chat Interface",
+    "demo_link_or_assets": null
+  },
+  "why_now": {
+    "market_trends": "Al agents will become the primary way we interact with technology in the future. By 2025, 80% of enterprises will utilize Al-driven analytics to enhance decision-making.",
+    "timing_rationale": null
+  },
+  "market": {
+    "total_addressable_market_TAM": "$300 BILLION",
+    "serviceable_available_market_SAM": null,
+    "serviceable_obtainable_market_SOM": "$5 BILLION (2024), $200 BILLION (2034)",
+    "customer_personas": "Medium to large enterprises, Generating and handling large volumes of data, 500+ Employees, Revenues of $5 Million+, Using legacy systems for gathering & storing data",
+    "customer_pain_points": "Cross dependency on multiple teams to process data"
+  },
+  "product": {
+    "detailed_features": "Widgets for Quick analytics, Calculator for instant data transformations, Build and scale data pipelines, Customize and import code, Feature readability, Al Guidance, Automated charts, Unified Data Integration, Conversational Al, Al deep thinking",
+    "unique_selling_points": "Simple Chat Interface",
+    "technology_stack": null,
+    "user_experience_overview": "Chat With SIA",
+    "roadmap_or_milestones": "First version of the product deployment, taking signups and interest from customers.",
+    "screenshots_or_visuals": null
+  },
+  "business_model": {
+    "revenue_streams": "Per subscription per month billing, One time fee for on-prem deployment, Annual maintenance Contract, Training & Support, Custom development",
+    "pricing_strategy": "$3k per month, $10k by EOY, $150k-$300k Average Contract Value",
+    "customer_lifetime_value": "$1 Million+",
+    "customer_acquisition_cost": null,
+    "repeat_purchase_factors": null
+  },
+  "traction_and_validation": {
+    "user_or_customer_growth": null,
+    "revenue_growth": "Expected revenues of $400k in FY 25-26",
+    "active_users_metrics": null,
+    "partnerships": "Data Companies across the world",
+    "notable_clients": "BOSCH, ABHA PRIVATE HOSPITAL, Mercedes-Benz, Infoline, Al Borg Diagnostics, eSunScope, SEG AUTOMOTIVE, IDBI Bank, ZELIOT, CHARA",
+    "testimonials_or_case_studies": null,
+    "press_mentions": null
+  },
+  "go_to_market_strategy": {
+    "marketing_channels": "Webinars and master classes, Build a Data community to change perception, Define sector wise use cases, Host Innovation challenges, Strategic digital ads and SEO, Thought leadership campaigns, Influencer collaborations, Hosting on cloud marketplaces",
+    "sales_process": "Warm Intro",
+    "partnerships_distributors": "Data Services, PROPEL, ATHON, PN, primeNumber, HBOSCH, RAYRC",
+    "growth_plan": null
+  },
+  "competition": {
+    "competitor_list": null,
+    "competitive_analysis_table": null,
+    "barriers_to_entry": null,
+    "startup_advantages": null
+  },
+  "team": {
+    "founders": [
+      {
+        "name": "Divya Krishna R",
+        "title": null,
+        "bio": "B.E Graduation 2012, SDE @ Bosch 2014, M.E. @ Frankfurt university Information technology 2017, Lead data scientist @ Bosch, Teamed up with Suma to develop data driven applications, Developed multiple solutions together, own 10 PATENTS combined",
+        "linkedin": null
+      },
+      {
+        "name": "Sumalata Kamat",
+        "title": null,
+        "bio": "B.E Graduation 2019, System engineer @Bosch, Content manager @Byjus",
+        "linkedin": null
+      },
+      {
+        "name": "Karthik. C",
+        "title": null,
+        "bio": "B.E Graduation 2021, Asst manager @ PolyOptics, Germany. Teaching asst @ HSRW. Founded Avid Athletes - Sports-Tech startup",
+        "linkedin": null
+      }
+    ],
+    "key_team_members": [],
+    "advisors": []
+  },
+  "financials": {
+    "historical_financials": null,
+    "projections": {
+      "next_year": null,
+      "three_year": null,
+      "five_year": null
+    },
+    "key_metrics": null,
+    "unit_economics": null,
+    "break_even_analysis": null,
+    "funding_history": null,
+    "capitalization_table": null
+  },
+  "funding": {
+    "amount_seeking": "INR 5 Crores",
+    "use_of_funds": "30% - Product development, 60% - Sales and marketing, 10% - Operational and miscellaneous costs",
+    "current_investors": null,
+    "deal_terms": null
+  },
+  "vision_and_impact": {
+    "future_plans": "Community driven mass adoption of Sia. Sia evolves to learn user flow and proactively guiding users' actions. Fully autonomous Al agent that drives decisions at leadership levels.",
+    "growth_opportunity": "Scaling to international markets, Registration of IP, Industry vertical research and template creation, Setting up of partner eco-system",
+    "exit_strategy": "Short term plan: Series A or B exit, 5x return. Long term plan: Exit via IPO, 30x to 40x returns.",
+    "societal_impact": null
+  },
+  "appendix": {
+    "additional_charts_or_graphs": null,
+    "market_research_references": "Marketresearchfuture, market.us, Gartner, data.worldbank.org, Accenture",
+    "patents_or_IP": null,
+    "FAQs": null
+  },
+  "other_information": {}
+}
+```

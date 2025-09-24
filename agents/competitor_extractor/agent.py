@@ -11,6 +11,7 @@ import logging
 from google.adk.agents import Agent
 from google.genai import types
 
+
 from utils.configs import config
 from utils.models import (
     CompetitiveAdvantage,

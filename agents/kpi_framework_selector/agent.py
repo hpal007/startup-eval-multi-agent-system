@@ -5,6 +5,7 @@ import logging
 from google.adk.agents import Agent
 from google.genai import types
 
+
 from utils.configs import config
 
 from . import prompt
@@ -34,7 +35,7 @@ def select_industry_kpi_framework(
     industry_classification: dict,
     growth_stage: str,
     business_model: str,
-    current_kpis: dict
+    current_kpis: dict,
 ) -> dict:
     """
     Select and customize appropriate KPI framework for the startup.
@@ -92,7 +93,7 @@ def select_industry_kpi_framework(
     return {
         "framework": framework_model.dict(),
         "validation_status": validation_status.value,
-        "customization_notes": f"Framework customized for {growth_stage} stage {industry_class.primary_industry} company"
+        "customization_notes": f"Framework customized for {growth_stage} stage {industry_class.primary_industry} company",
     }
 
 
@@ -120,39 +121,62 @@ def validate_kpi_framework_completeness(framework: dict, current_kpis: dict) -> 
                 # Ensure required fields exist and meet minimal constraints
                 name = item.get("name") or item.get("kpi_name") or "Unknown KPI"
                 desc = item.get("description") or "Auto-generated description"
-                calc = item.get("calculation_method") or item.get("formula") or "Auto-generated calculation method"
+                calc = (
+                    item.get("calculation_method")
+                    or item.get("formula")
+                    or "Auto-generated calculation method"
+                )
                 weight = item.get("importance_weight", 1.0)
                 rationale = item.get("rationale") or "Auto-coerced from LLM output"
-                coerced.append({
-                    "name": name,
-                    "description": desc,
-                    "calculation_method": calc,
-                    "importance_weight": float(weight) if isinstance(weight, (int, float)) else 1.0,
-                    "rationale": rationale,
-                })
+                coerced.append(
+                    {
+                        "name": name,
+                        "description": desc,
+                        "calculation_method": calc,
+                        "importance_weight": float(weight)
+                        if isinstance(weight, (int, float))
+                        else 1.0,
+                        "rationale": rationale,
+                    }
+                )
             elif isinstance(item, str):
-                coerced.append({
-                    "name": item,
-                    "description": "Auto-generated description",
-                    "calculation_method": "Auto-generated calculation method",
-                    "importance_weight": 1.0,
-                    "rationale": "Auto-coerced from LLM output",
-                })
+                coerced.append(
+                    {
+                        "name": item,
+                        "description": "Auto-generated description",
+                        "calculation_method": "Auto-generated calculation method",
+                        "importance_weight": 1.0,
+                        "rationale": "Auto-coerced from LLM output",
+                    }
+                )
         # Normalize weights if present
-        weights = [k.get("importance_weight") for k in coerced if isinstance(k, dict) and isinstance(k.get("importance_weight"), (int, float))]
+        weights = [
+            k.get("importance_weight")
+            for k in coerced
+            if isinstance(k, dict)
+            and isinstance(k.get("importance_weight"), (int, float))
+        ]
         total = sum(weights) if weights else 0.0
         if total > 0:
             for k in coerced:
-                if isinstance(k, dict) and isinstance(k.get("importance_weight"), (int, float)):
+                if isinstance(k, dict) and isinstance(
+                    k.get("importance_weight"), (int, float)
+                ):
                     k["importance_weight"] = float(k["importance_weight"]) / total
         return coerced
 
     def _coerce_framework_dict(raw):
         # Allow nested {"framework": {...}}
-        data = raw.get("framework") if isinstance(raw, dict) and "framework" in raw else raw
+        data = (
+            raw.get("framework")
+            if isinstance(raw, dict) and "framework" in raw
+            else raw
+        )
         if not isinstance(data, dict):
             data = {}
-        industry = data.get("industry") or data.get("primary_industry") or "Unknown Industry"
+        industry = (
+            data.get("industry") or data.get("primary_industry") or "Unknown Industry"
+        )
         primary_kpis = _coerce_kpi_list(data.get("primary_kpis") or [])
         secondary_kpis = _coerce_kpi_list(data.get("secondary_kpis") or [])
         return {
@@ -168,15 +192,24 @@ def validate_kpi_framework_completeness(framework: dict, current_kpis: dict) -> 
     except Exception as e:
         # Last-resort fallback to prevent runtime hangs: return incomplete with basic recommendations
         logger = logging.getLogger(__name__)
-        logger.error("KPIFramework validation failed after coercion; returning incomplete result", exc_info=e)
-        primary_names = [k.get("name", "KPI") for k in framework.get("primary_kpis", []) if isinstance(k, dict)]
+        logger.error(
+            "KPIFramework validation failed after coercion; returning incomplete result",
+            exc_info=e,
+        )
+        primary_names = [
+            k.get("name", "KPI")
+            for k in framework.get("primary_kpis", [])
+            if isinstance(k, dict)
+        ]
         missing_kpis = primary_names[:5]
         return {
             "validation_status": "incomplete",
             "coverage_ratio": 0.0,
             "matched_kpis": [],
             "missing_kpis": missing_kpis,
-            "recommendations": _generate_framework_recommendations(type("S", (), {"value": "incomplete"})(), missing_kpis),
+            "recommendations": _generate_framework_recommendations(
+                type("S", (), {"value": "incomplete"})(), missing_kpis
+            ),
         }
 
     validation_status = validate_framework_completeness(framework_model, current_kpis)
@@ -189,22 +222,27 @@ def validate_kpi_framework_completeness(framework: dict, current_kpis: dict) -> 
     missing_kpis = []
 
     for kpi_name in primary_kpi_names:
-        if (kpi_name in available_kpi_names or
-            any(kpi_name.lower() in available_name.lower() or
-                available_name.lower() in kpi_name.lower()
-                for available_name in available_kpi_names)):
+        if kpi_name in available_kpi_names or any(
+            kpi_name.lower() in available_name.lower()
+            or available_name.lower() in kpi_name.lower()
+            for available_name in available_kpi_names
+        ):
             matched_kpis.append(kpi_name)
         else:
             missing_kpis.append(kpi_name)
 
-    coverage_ratio = len(matched_kpis) / len(primary_kpi_names) if primary_kpi_names else 0
+    coverage_ratio = (
+        len(matched_kpis) / len(primary_kpi_names) if primary_kpi_names else 0
+    )
 
     return {
         "validation_status": validation_status.value,
         "coverage_ratio": coverage_ratio,
         "matched_kpis": matched_kpis,
         "missing_kpis": missing_kpis,
-        "recommendations": _generate_framework_recommendations(validation_status, missing_kpis)
+        "recommendations": _generate_framework_recommendations(
+            validation_status, missing_kpis
+        ),
     }
 
 
@@ -213,14 +251,22 @@ def _generate_framework_recommendations(validation_status, missing_kpis):
     recommendations = []
 
     if validation_status.value == "missing_info":
-        recommendations.append("Critical KPI data is missing. Consider collecting data for the following metrics:")
-        recommendations.extend([f"- {kpi}" for kpi in missing_kpis[:5]])  # Top 5 missing KPIs
+        recommendations.append(
+            "Critical KPI data is missing. Consider collecting data for the following metrics:"
+        )
+        recommendations.extend(
+            [f"- {kpi}" for kpi in missing_kpis[:5]]
+        )  # Top 5 missing KPIs
     elif validation_status.value == "incomplete":
         recommendations.append("Some important KPIs are missing. Consider tracking:")
-        recommendations.extend([f"- {kpi}" for kpi in missing_kpis[:3]])  # Top 3 missing KPIs
+        recommendations.extend(
+            [f"- {kpi}" for kpi in missing_kpis[:3]]
+        )  # Top 3 missing KPIs
     else:
         recommendations.append("KPI framework is well-aligned with available data.")
-        recommendations.append("Consider expanding tracking to secondary KPIs for deeper insights.")
+        recommendations.append(
+            "Consider expanding tracking to secondary KPIs for deeper insights."
+        )
 
     return recommendations
 

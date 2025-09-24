@@ -13,12 +13,12 @@ graph TD
     B --> D[Founder Profile Orchestrator]
     B --> E[Competitor Profile Orchestrator]
     B --> F[Business KPIs Orchestrator]
-    
+
     C --> G[Structured Company Data]
     D --> H[Founder Team Assessment]
     E --> I[Competitive Landscape Analysis]
     F --> J[KPI Validation & Benchmarking]
-    
+
     G --> K[Comprehensive Startup Evaluation Report]
     H --> K
     I --> K

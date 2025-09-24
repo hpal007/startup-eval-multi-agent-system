@@ -19,14 +19,14 @@ graph TD
     A[Competitor Profile Orchestrator] --> B[Competitor Evaluation Pipeline]
     B --> C[Competitor Discovery Pipeline]
     B --> D[Analysis & Synthesis Pipeline]
-    
+
     C --> E[Competitor Extraction]
     C --> F[Market Research]
     C --> G[Intelligence Gathering]
-    
+
     D --> H[Competitive Analysis]
     D --> I[Report Synthesis]
-    
+
     E --> J[Parse Mentioned Competitors]
     F --> K[Discover Unlisted Competitors]
     G --> L[Build Detailed Profiles]
@@ -84,10 +84,10 @@ Each agent is created using factory functions to ensure fresh instances:
 ```python
 def create_competitor_discovery_pipeline():
     # Creates fresh pipeline with extraction → research → intelligence
-    
+
 def create_analysis_synthesis_pipeline():
     # Creates fresh pipeline with analysis → synthesis
-    
+
 def create_competitor_evaluation_pipeline():
     # Creates main pipeline combining discovery and analysis
 ```
@@ -99,13 +99,13 @@ The system implements comprehensive progress tracking:
 ```python
 def competitor_discovery_pipeline_callback(callback_context, **kwargs):
     # Tracks discovery pipeline progress
-    
+
 def competitor_extraction_progress_callback(callback_context, **kwargs):
     # Stage 1/3: Competitor Extraction progress
-    
+
 def market_research_progress_callback(callback_context, **kwargs):
     # Stage 2/3: Market Research progress
-    
+
 def intelligence_gathering_progress_callback(callback_context, **kwargs):
     # Stage 3/3: Intelligence Gathering progress
 ```
@@ -115,10 +115,10 @@ def intelligence_gathering_progress_callback(callback_context, **kwargs):
 ```python
 def analysis_pipeline_callback(callback_context, **kwargs):
     # Tracks analysis pipeline initiation
-    
+
 def competitive_analysis_progress_callback(callback_context, **kwargs):
     # Analysis Stage 1/2: Competitive Analysis progress
-    
+
 def report_synthesis_progress_callback(callback_context, **kwargs):
     # Analysis Stage 2/2: Report Synthesis progress
 ```
@@ -128,7 +128,7 @@ def report_synthesis_progress_callback(callback_context, **kwargs):
 ### Stage 1: Competitor Extraction
 **Purpose**: Parse mentioned competitors and claims from pitch documents
 
-**Input**: 
+**Input**:
 - Pitch deck content
 - Business plan documents
 - Company descriptions

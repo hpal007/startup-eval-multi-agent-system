@@ -161,8 +161,8 @@ SAAS_KPI_FRAMEWORK = {
             "benchmark_ranges": {
                 "seed": {"p25": 0, "p50": 100000, "p75": 500000},
                 "early": {"p25": 500000, "p50": 2000000, "p75": 10000000},
-                "growth": {"p25": 10000000, "p50": 50000000, "p75": 200000000}
-            }
+                "growth": {"p25": 10000000, "p50": 50000000, "p75": 200000000},
+            },
         },
         {
             "name": "CAC",
@@ -172,8 +172,8 @@ SAAS_KPI_FRAMEWORK = {
             "benchmark_ranges": {
                 "seed": {"p25": 100, "p50": 500, "p75": 2000},
                 "early": {"p25": 500, "p50": 1500, "p75": 5000},
-                "growth": {"p25": 1000, "p50": 3000, "p75": 10000}
-            }
+                "growth": {"p25": 1000, "p50": 3000, "p75": 10000},
+            },
         },
         {
             "name": "LTV",
@@ -183,8 +183,8 @@ SAAS_KPI_FRAMEWORK = {
             "benchmark_ranges": {
                 "seed": {"p25": 1000, "p50": 5000, "p75": 20000},
                 "early": {"p25": 5000, "p50": 15000, "p75": 50000},
-                "growth": {"p25": 10000, "p50": 30000, "p75": 100000}
-            }
+                "growth": {"p25": 10000, "p50": 30000, "p75": 100000},
+            },
         },
         {
             "name": "Churn Rate",
@@ -194,8 +194,8 @@ SAAS_KPI_FRAMEWORK = {
             "benchmark_ranges": {
                 "seed": {"p25": 0.02, "p50": 0.05, "p75": 0.10},
                 "early": {"p25": 0.01, "p50": 0.03, "p75": 0.07},
-                "growth": {"p25": 0.005, "p50": 0.02, "p75": 0.05}
-            }
+                "growth": {"p25": 0.005, "p50": 0.02, "p75": 0.05},
+            },
         },
         {
             "name": "NPS",
@@ -205,8 +205,8 @@ SAAS_KPI_FRAMEWORK = {
             "benchmark_ranges": {
                 "seed": {"p25": 20, "p50": 40, "p75": 60},
                 "early": {"p25": 30, "p50": 50, "p75": 70},
-                "growth": {"p25": 40, "p50": 60, "p75": 80}
-            }
+                "growth": {"p25": 40, "p50": 60, "p75": 80},
+            },
         },
         {
             "name": "ARPU",
@@ -216,14 +216,17 @@ SAAS_KPI_FRAMEWORK = {
             "benchmark_ranges": {
                 "seed": {"p25": 50, "p50": 200, "p75": 1000},
                 "early": {"p25": 100, "p50": 500, "p75": 2000},
-                "growth": {"p25": 200, "p50": 1000, "p75": 5000}
-            }
-        }
+                "growth": {"p25": 200, "p50": 1000, "p75": 5000},
+            },
+        },
     ],
     "secondary_kpis": [
-        "Gross Revenue Retention", "Net Revenue Retention", "Time to Value",
-        "Feature Adoption Rate", "Support Ticket Volume"
-    ]
+        "Gross Revenue Retention",
+        "Net Revenue Retention",
+        "Time to Value",
+        "Feature Adoption Rate",
+        "Support Ticket Volume",
+    ],
 }
 
 ECOMMERCE_KPI_FRAMEWORK = {
@@ -237,8 +240,8 @@ ECOMMERCE_KPI_FRAMEWORK = {
             "benchmark_ranges": {
                 "seed": {"p25": 10000, "p50": 100000, "p75": 1000000},
                 "early": {"p25": 1000000, "p50": 10000000, "p75": 50000000},
-                "growth": {"p25": 50000000, "p50": 200000000, "p75": 1000000000}
-            }
+                "growth": {"p25": 50000000, "p50": 200000000, "p75": 1000000000},
+            },
         },
         {
             "name": "Conversion Rate",
@@ -248,8 +251,8 @@ ECOMMERCE_KPI_FRAMEWORK = {
             "benchmark_ranges": {
                 "seed": {"p25": 0.01, "p50": 0.02, "p75": 0.04},
                 "early": {"p25": 0.02, "p50": 0.03, "p75": 0.05},
-                "growth": {"p25": 0.03, "p50": 0.04, "p75": 0.07}
-            }
+                "growth": {"p25": 0.03, "p50": 0.04, "p75": 0.07},
+            },
         },
         {
             "name": "AOV",
@@ -259,8 +262,8 @@ ECOMMERCE_KPI_FRAMEWORK = {
             "benchmark_ranges": {
                 "seed": {"p25": 25, "p50": 50, "p75": 100},
                 "early": {"p25": 50, "p50": 75, "p75": 150},
-                "growth": {"p25": 75, "p50": 100, "p75": 200}
-            }
+                "growth": {"p25": 75, "p50": 100, "p75": 200},
+            },
         },
         {
             "name": "CAC",
@@ -270,8 +273,8 @@ ECOMMERCE_KPI_FRAMEWORK = {
             "benchmark_ranges": {
                 "seed": {"p25": 10, "p50": 25, "p75": 50},
                 "early": {"p25": 25, "p50": 50, "p75": 100},
-                "growth": {"p25": 50, "p50": 75, "p75": 150}
-            }
+                "growth": {"p25": 50, "p50": 75, "p75": 150},
+            },
         },
         {
             "name": "Customer Retention Rate",
@@ -281,8 +284,8 @@ ECOMMERCE_KPI_FRAMEWORK = {
             "benchmark_ranges": {
                 "seed": {"p25": 0.15, "p50": 0.25, "p75": 0.40},
                 "early": {"p25": 0.25, "p50": 0.35, "p75": 0.50},
-                "growth": {"p25": 0.35, "p50": 0.45, "p75": 0.60}
-            }
+                "growth": {"p25": 0.35, "p50": 0.45, "p75": 0.60},
+            },
         },
         {
             "name": "Cart Abandonment Rate",
@@ -292,14 +295,17 @@ ECOMMERCE_KPI_FRAMEWORK = {
             "benchmark_ranges": {
                 "seed": {"p25": 0.60, "p50": 0.70, "p75": 0.80},
                 "early": {"p25": 0.55, "p50": 0.65, "p75": 0.75},
-                "growth": {"p25": 0.50, "p50": 0.60, "p75": 0.70}
-            }
-        }
+                "growth": {"p25": 0.50, "p50": 0.60, "p75": 0.70},
+            },
+        },
     ],
     "secondary_kpis": [
-        "Return Rate", "Inventory Turnover", "Customer Satisfaction Score",
-        "Mobile Conversion Rate", "Payment Success Rate"
-    ]
+        "Return Rate",
+        "Inventory Turnover",
+        "Customer Satisfaction Score",
+        "Mobile Conversion Rate",
+        "Payment Success Rate",
+    ],
 }
 
 FINTECH_KPI_FRAMEWORK = {
@@ -313,8 +319,8 @@ FINTECH_KPI_FRAMEWORK = {
             "benchmark_ranges": {
                 "seed": {"p25": 100000, "p50": 1000000, "p75": 10000000},
                 "early": {"p25": 10000000, "p50": 100000000, "p75": 1000000000},
-                "growth": {"p25": 1000000000, "p50": 10000000000, "p75": 100000000000}
-            }
+                "growth": {"p25": 1000000000, "p50": 10000000000, "p75": 100000000000},
+            },
         },
         {
             "name": "User Growth Rate",
@@ -324,8 +330,8 @@ FINTECH_KPI_FRAMEWORK = {
             "benchmark_ranges": {
                 "seed": {"p25": 0.10, "p50": 0.20, "p75": 0.50},
                 "early": {"p25": 0.05, "p50": 0.15, "p75": 0.30},
-                "growth": {"p25": 0.02, "p50": 0.10, "p75": 0.20}
-            }
+                "growth": {"p25": 0.02, "p50": 0.10, "p75": 0.20},
+            },
         },
         {
             "name": "Revenue per User",
@@ -335,8 +341,8 @@ FINTECH_KPI_FRAMEWORK = {
             "benchmark_ranges": {
                 "seed": {"p25": 10, "p50": 50, "p75": 200},
                 "early": {"p25": 50, "p50": 150, "p75": 500},
-                "growth": {"p25": 100, "p50": 300, "p75": 1000}
-            }
+                "growth": {"p25": 100, "p50": 300, "p75": 1000},
+            },
         },
         {
             "name": "Regulatory Compliance Score",
@@ -346,8 +352,8 @@ FINTECH_KPI_FRAMEWORK = {
             "benchmark_ranges": {
                 "seed": {"p25": 0.80, "p50": 0.90, "p75": 0.95},
                 "early": {"p25": 0.90, "p50": 0.95, "p75": 0.98},
-                "growth": {"p25": 0.95, "p50": 0.98, "p75": 0.99}
-            }
+                "growth": {"p25": 0.95, "p50": 0.98, "p75": 0.99},
+            },
         },
         {
             "name": "Fraud Rate",
@@ -357,8 +363,8 @@ FINTECH_KPI_FRAMEWORK = {
             "benchmark_ranges": {
                 "seed": {"p25": 0.001, "p50": 0.005, "p75": 0.01},
                 "early": {"p25": 0.0005, "p50": 0.002, "p75": 0.005},
-                "growth": {"p25": 0.0001, "p50": 0.001, "p75": 0.003}
-            }
+                "growth": {"p25": 0.0001, "p50": 0.001, "p75": 0.003},
+            },
         },
         {
             "name": "Customer Onboarding Time",
@@ -368,14 +374,17 @@ FINTECH_KPI_FRAMEWORK = {
             "benchmark_ranges": {
                 "seed": {"p25": 24, "p50": 48, "p75": 120},
                 "early": {"p25": 12, "p50": 24, "p75": 72},
-                "growth": {"p25": 6, "p50": 12, "p75": 24}
-            }
-        }
+                "growth": {"p25": 6, "p50": 12, "p75": 24},
+            },
+        },
     ],
     "secondary_kpis": [
-        "API Uptime", "Cost per Transaction", "Customer Support Resolution Time",
-        "Cross-sell Rate", "Deposit Growth Rate"
-    ]
+        "API Uptime",
+        "Cost per Transaction",
+        "Customer Support Resolution Time",
+        "Cross-sell Rate",
+        "Deposit Growth Rate",
+    ],
 }
 
 HEALTHCARE_KPI_FRAMEWORK = {
@@ -389,8 +398,8 @@ HEALTHCARE_KPI_FRAMEWORK = {
             "benchmark_ranges": {
                 "seed": {"p25": 0.1, "p50": 0.3, "p75": 0.6},
                 "early": {"p25": 0.3, "p50": 0.6, "p75": 0.8},
-                "growth": {"p25": 0.6, "p50": 0.8, "p75": 1.0}
-            }
+                "growth": {"p25": 0.6, "p50": 0.8, "p75": 1.0},
+            },
         },
         {
             "name": "Regulatory Approval Milestones",
@@ -400,8 +409,8 @@ HEALTHCARE_KPI_FRAMEWORK = {
             "benchmark_ranges": {
                 "seed": {"p25": 0.0, "p50": 0.2, "p75": 0.5},
                 "early": {"p25": 0.2, "p50": 0.5, "p75": 0.8},
-                "growth": {"p25": 0.5, "p50": 0.8, "p75": 1.0}
-            }
+                "growth": {"p25": 0.5, "p50": 0.8, "p75": 1.0},
+            },
         },
         {
             "name": "Patient Outcomes",
@@ -411,8 +420,8 @@ HEALTHCARE_KPI_FRAMEWORK = {
             "benchmark_ranges": {
                 "seed": {"p25": 0.3, "p50": 0.5, "p75": 0.7},
                 "early": {"p25": 0.5, "p50": 0.7, "p75": 0.8},
-                "growth": {"p25": 0.7, "p50": 0.8, "p75": 0.9}
-            }
+                "growth": {"p25": 0.7, "p50": 0.8, "p75": 0.9},
+            },
         },
         {
             "name": "R&D Efficiency",
@@ -422,8 +431,8 @@ HEALTHCARE_KPI_FRAMEWORK = {
             "benchmark_ranges": {
                 "seed": {"p25": 1000000, "p50": 5000000, "p75": 20000000},
                 "early": {"p25": 5000000, "p50": 15000000, "p75": 50000000},
-                "growth": {"p25": 10000000, "p50": 30000000, "p75": 100000000}
-            }
+                "growth": {"p25": 10000000, "p50": 30000000, "p75": 100000000},
+            },
         },
         {
             "name": "Intellectual Property Portfolio",
@@ -433,14 +442,17 @@ HEALTHCARE_KPI_FRAMEWORK = {
             "benchmark_ranges": {
                 "seed": {"p25": 1, "p50": 3, "p75": 10},
                 "early": {"p25": 5, "p50": 15, "p75": 30},
-                "growth": {"p25": 20, "p50": 50, "p75": 100}
-            }
-        }
+                "growth": {"p25": 20, "p50": 50, "p75": 100},
+            },
+        },
     ],
     "secondary_kpis": [
-        "Patient Recruitment Rate", "Adverse Event Rate", "Manufacturing Yield",
-        "Regulatory Submission Quality", "Partnership Development"
-    ]
+        "Patient Recruitment Rate",
+        "Adverse Event Rate",
+        "Manufacturing Yield",
+        "Regulatory Submission Quality",
+        "Partnership Development",
+    ],
 }
 
 # Framework database mapping
@@ -453,5 +465,5 @@ KPI_FRAMEWORK_DATABASE = {
     "financial_services": FINTECH_KPI_FRAMEWORK,
     "healthcare": HEALTHCARE_KPI_FRAMEWORK,
     "biotech": HEALTHCARE_KPI_FRAMEWORK,
-    "biotechnology": HEALTHCARE_KPI_FRAMEWORK
+    "biotechnology": HEALTHCARE_KPI_FRAMEWORK,
 }

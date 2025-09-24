@@ -7,7 +7,7 @@ __pycache__/
 *.sqlite3
 *.db
 *.log
-.DS_Store   
+.DS_Store
 .env
 .env.*
 .vscode/
@@ -21,3 +21,8 @@ __pycache__/
 .pytest_cache/
 .uploads/
 ui/node_modules
+spec
+.spec/
+dist/
+.github/
+sessions.db

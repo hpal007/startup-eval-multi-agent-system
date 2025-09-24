@@ -1,5 +1,4 @@
-# from google.adk.agents.llm_agent import Agent
-from google.adk.agents import Agent, ParallelAgent, SequentialAgent
+from google.adk.agents import Agent
 from google.adk.agents.callback_context import CallbackContext
 from google.adk.tools import FunctionTool
 
@@ -24,11 +23,9 @@ from workflow.founder_profile_orchestrator.agent import (
     create_founder_profile_orchestrator,
 )
 
-from . import prompt
-
 logger = get_logger(__name__)
-file_path = "/Users/harish/Desktop/se-system/files/test_startup_pitch.pdf"
 
+file_path = None
 # Use configuration system to get the model
 MODEL = config.get_model_for_agent("abc_agent")
 
@@ -62,35 +59,17 @@ async def before_agent_callback(callback_context: CallbackContext):
 def after_agent_callback(callback_context: CallbackContext):
     logger.info(f"After agent callback executed {callback_context.invocation_id}")
 
-    # Save any final state or results
-    try:
-        if callback_context.state:
-            save_state_to_file(
-                context=callback_context,
-                session_path=get_session_dir(callback_context),
-                filename="all_states_report",
-                file_type="json",
-            )
-    except Exception as e:
-        logger.error(f"❌ Error saving state in after_agent_callback: {e}")
-
-evaluation_parallel = ParallelAgent(
-    name="evaluation_parallel",
-    description="Parallel evaluation of founders, competitors, and business KPIs",
+# Main evaluation pipeline - sequential execution
+evaluation_pipeline = Agent(
+    model=MODEL,
+    name="evaluation_pipeline",
+    description="Sequential execution of PDF processing, founder analysis, business KPI validation, and competitor analysis",
+    instruction="Execute the complete startup evaluation pipeline: first transfer to pdf_processor_agent, then founder_profile_orchestrator, then business_kpis_orchestrator, then competitor_profile_orchestrator. Each agent must complete before proceeding to the next.",
     sub_agents=[
-        create_founder_profile_orchestrator(),  # Analyze founders and generate team report
-        create_business_kpis_orchestrator(),  # Validate business KPIs and frameworks
-        create_competitor_profile_orchestrator(),  # Analyze competitors and market positioning
-    ],
-)
-
-# Main founder evaluation pipeline
-startup_evaluation_pipeline = SequentialAgent(
-    name="startup_evaluation_pipeline",
-    description="Processes startup pitch documents and generates comprehensive founder team evaluations",
-    sub_agents=[
-        create_pdf_processor_agent(),  # Extract and process pitch deck content
-        evaluation_parallel,  # Parallel evaluation of founders, competitors, and business KPIs
+        create_pdf_processor_agent(),  # Extract and process pitch deck content first
+        create_founder_profile_orchestrator(),  # Then analyze founders
+        create_business_kpis_orchestrator(),  # Then validate business KPIs
+        create_competitor_profile_orchestrator(),  # Finally analyze competitors
     ],
 )
 
@@ -98,10 +77,10 @@ root_agent = Agent(
     model=MODEL,
     name="master_agent",
     description="Comprehensive startup evaluation system that processes pitch documents and generates in-depth analysis including PDF content extraction, founder team verification, competitive landscape assessment, and market positioning reports.",
-    instruction=prompt.MASTER_AGENT_PROMPT,
+    instruction="When you receive a query about evaluating a startup, transfer to evaluation_pipeline and instruct it to 'Execute the complete startup evaluation pipeline including PDF processing, founder analysis, business KPI validation, and competitor analysis.'",
     before_agent_callback=before_agent_callback,
     after_agent_callback=after_agent_callback,
     tools=[FunctionTool(list_user_files_py)],
-    sub_agents=[startup_evaluation_pipeline],
+    sub_agents=[evaluation_pipeline],
     include_contents="default",
 )

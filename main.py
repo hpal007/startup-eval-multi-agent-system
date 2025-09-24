@@ -14,8 +14,8 @@ from fastapi.responses import StreamingResponse
 from google.adk.artifacts import InMemoryArtifactService
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
-from google.genai.types import Content
 from google.genai import types
+from google.genai.types import Content
 from pydantic import BaseModel
 
 from workflow.master.agent import root_agent
@@ -23,7 +23,7 @@ from workflow.master.agent import root_agent
 app = FastAPI(
     title="Startup Evaluation API",
     description="Multi-agent system for startup pitch analysis",
-    version="1.0.0"
+    version="1.0.0",
 )
 
 app.add_middleware(
@@ -40,8 +40,12 @@ UPLOAD_DIR.mkdir(exist_ok=True)
 
 session_service = InMemorySessionService()
 artifact_service = InMemoryArtifactService()
-runner = Runner(agent=root_agent, app_name="startup-eval", session_service=session_service, artifact_service=artifact_service)
-
+runner = Runner(
+    agent=root_agent,
+    app_name="startup-eval",
+    session_service=session_service,
+    artifact_service=artifact_service,
+)
 
 
 class HealthResponse(BaseModel):
@@ -49,19 +53,18 @@ class HealthResponse(BaseModel):
     message: str
     version: str = "1.0.0"
 
+
 @app.get("/", response_model=HealthResponse)
 async def root():
     return HealthResponse(
-        status="ok",
-        message="Startup Evaluation Multi-Agent System API"
+        status="ok", message="Startup Evaluation Multi-Agent System API"
     )
+
 
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
-    return HealthResponse(
-        status="healthy",
-        message="Service is running properly"
-    )
+    return HealthResponse(status="healthy", message="Service is running properly")
+
 
 @app.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
@@ -69,12 +72,12 @@ async def upload_file(file: UploadFile = File(...)):
         "application/pdf",
         "application/msword",
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "text/plain"
+        "text/plain",
     }
     if file.content_type not in allowed_types:
         raise HTTPException(
             status_code=400,
-            detail=f"File type {file.content_type} not supported. Allowed types: PDF, DOC, DOCX, TXT"
+            detail=f"File type {file.content_type} not supported. Allowed types: PDF, DOC, DOCX, TXT",
         )
     file_id = str(uuid.uuid4())
     unique_filename = f"{file_id}_{file.filename}"
@@ -90,8 +93,9 @@ async def upload_file(file: UploadFile = File(...)):
         "original_name": file.filename,
         "size": len(content),
         "content_type": file.content_type,
-        "message": "File uploaded successfully"
+        "message": "File uploaded successfully",
     }
+
 
 @app.post("/process")
 async def process(request: Request):
@@ -108,7 +112,11 @@ async def process(request: Request):
         request_payload = {}
 
     # Support both file-based and direct text queries
-    file_name = request_payload.get("fileName") or request_payload.get("filename") or request_payload.get("file_name")
+    file_name = (
+        request_payload.get("fileName")
+        or request_payload.get("filename")
+        or request_payload.get("file_name")
+    )
     user_query = request_payload.get("query") or file_name or "No query provided"
 
     # Use session_id and user_id for stateful context - demo uses UUID
@@ -142,11 +150,13 @@ async def process(request: Request):
             chosen_dir = candidate1
 
         # Send an initial SSE with session directory info so UI can poll exact path
-        yield sse({
-            "type": "session_info",
-            "session_dirname": chosen_dir,
-            "session_path": str((sessions_root / chosen_dir).resolve()),
-        })
+        yield sse(
+            {
+                "type": "session_info",
+                "session_dirname": chosen_dir,
+                "session_path": str((sessions_root / chosen_dir).resolve()),
+            }
+        )
 
         # Bridge runner.run (may be a sync generator) to async using a queue
         queue: asyncio.Queue[object] = asyncio.Queue()
@@ -156,13 +166,19 @@ async def process(request: Request):
                 # Build message parts, include file bytes if available
                 parts = [types.Part(text=user_query)]
 
-                incoming_file_path = request_payload.get("filePath") or request_payload.get("file_path")
+                incoming_file_path = request_payload.get(
+                    "filePath"
+                ) or request_payload.get("file_path")
                 if incoming_file_path:
                     try:
                         p = Path(incoming_file_path)
                         if p.exists():
                             data = p.read_bytes()
-                            parts.append(types.Part.from_bytes(data=data, mime_type="application/pdf"))
+                            parts.append(
+                                types.Part.from_bytes(
+                                    data=data, mime_type="application/pdf"
+                                )
+                            )
                     except Exception:
                         # Ignore read errors and continue without inline data
                         pass
@@ -173,7 +189,11 @@ async def process(request: Request):
                         if candidate.exists():
                             try:
                                 data = candidate.read_bytes()
-                                parts.append(types.Part.from_bytes(data=data, mime_type="application/pdf"))
+                                parts.append(
+                                    types.Part.from_bytes(
+                                        data=data, mime_type="application/pdf"
+                                    )
+                                )
                             except Exception:
                                 pass
 
@@ -205,16 +225,24 @@ async def process(request: Request):
                     # instead of dumping the bytes to the SSE stream.
                     content_text = None
                     try:
-                        if hasattr(event, "content") and getattr(event.content, "parts", None):
+                        if hasattr(event, "content") and getattr(
+                            event.content, "parts", None
+                        ):
                             for p in event.content.parts:
                                 if getattr(p, "text", None):
                                     content_text = p.text
                                     break
                                 if getattr(p, "inline_data", None):
                                     inline = p.inline_data
-                                    size = len(inline.data) if getattr(inline, "data", None) else None
+                                    size = (
+                                        len(inline.data)
+                                        if getattr(inline, "data", None)
+                                        else None
+                                    )
                                     mime = getattr(inline, "mime_type", None)
-                                    content_text = f"[attached file: {size} bytes, mime={mime}]"
+                                    content_text = (
+                                        f"[attached file: {size} bytes, mime={mime}]"
+                                    )
                                     break
                     except Exception:
                         content_text = None
@@ -226,15 +254,19 @@ async def process(request: Request):
                         except Exception:
                             content_text = "<unserializable event content>"
 
-                    yield sse({
-                        "type": event_type,
-                        "content": content_text,
-                        "timestamp": datetime.utcnow().isoformat(),
-                        "file": file_name if is_final else None,
-                    })
+                    yield sse(
+                        {
+                            "type": event_type,
+                            "content": content_text,
+                            "timestamp": datetime.utcnow().isoformat(),
+                            "file": file_name if is_final else None,
+                        }
+                    )
                     # IMPORTANT: Do NOT break here; let the runner finish!
                 except Exception as e:
-                    yield sse({"type": "error", "content": f"Event handling error: {e}"})
+                    yield sse(
+                        {"type": "error", "content": f"Event handling error: {e}"}
+                    )
             elif item_type == "error":
                 yield sse({"type": "error", "content": str(qpayload)})
                 break
@@ -250,10 +282,5 @@ async def process(request: Request):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(
-        "main:app",
-        host="127.0.0.1",
-        port=8000,
-        reload=True,
-        log_level="info"
-    )
+
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True, log_level="info")

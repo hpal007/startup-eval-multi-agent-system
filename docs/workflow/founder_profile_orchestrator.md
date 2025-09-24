@@ -19,16 +19,16 @@ graph TD
     A[Founder Profile Orchestrator] --> B[Founder Evaluation Pipeline]
     B --> C[Verification Pipeline]
     B --> D[Report Synthesizer]
-    
+
     C --> E[Query Generator]
     C --> F[Data Analyst]
-    
+
     E --> G[India-Specific Query Generation]
     F --> H[Multi-Source Analysis & Verification]
-    
+
     G --> I[Google Search + News API]
     H --> J[Claim Verification + KPI Generation]
-    
+
     D --> K[Team Assessment Report]
 ```
 
@@ -64,13 +64,13 @@ Each agent is created using factory functions:
 ```python
 def create_query_generator_agent():
     # Creates fresh query generator with India-specific focus
-    
+
 def create_data_analyst_agent():
     # Creates fresh data analyst with verification capabilities
-    
+
 def create_verification_pipeline():
     # Creates sequential query generation → data analysis pipeline
-    
+
 def create_founder_report_synthesizer():
     # Creates report synthesis agent with team assessment capabilities
 ```
@@ -94,7 +94,7 @@ from tools.search_tool import (
 - `search_indian_news`: India-specific news source validation
 
 **Data Analyst Tools**:
-- `comprehensive_founder_search`: Deep founder background research  
+- `comprehensive_founder_search`: Deep founder background research
 - `concise_google_search`: Targeted fact verification
 - `search_indian_news`: News-based claim validation
 
@@ -104,7 +104,7 @@ from tools.search_tool import (
 **Agent**: Query Generator
 **Purpose**: Generate targeted, India-specific search queries
 
-**Input**: 
+**Input**:
 - Founder information from pitch documents
 - Company context and industry data
 - Claimed achievements and backgrounds
@@ -125,7 +125,7 @@ from tools.search_tool import (
 - `search_indian_news`: News source targeting
 
 ### Stage 2: Data Analysis
-**Agent**: Data Analyst  
+**Agent**: Data Analyst
 **Purpose**: Verify founder claims against comprehensive search evidence
 
 **Input**:
@@ -199,13 +199,13 @@ from tools.search_tool import (
 ```python
 def setup_orchestrator_callback(callback_context, **kwargs):
     # Initializes founder verification workflow
-    
+
 def verification_pipeline_callback(callback_context, **kwargs):
     # Tracks verification pipeline progress
-    
+
 def query_generation_callback(callback_context, **kwargs):
     # Monitors query generation phase
-    
+
 def data_analysis_callback(callback_context, **kwargs):
     # Tracks data analysis and verification phase
 ```

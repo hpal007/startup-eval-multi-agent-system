@@ -25,6 +25,7 @@ from tools.market_validation_tools import (
     validate_tam_sam_som_logic,
 )
 from tools.search_tool import concise_google_search, search_indian_news
+
 from utils.configs import config
 
 MODEL = config.get_model_for_agent("abc_agent")
@@ -67,7 +68,7 @@ market_size_validator_agent = Agent(
         calculate_confidence_score,
         identify_discrepancy_flags,
         extract_market_data_from_search,
-        validate_tam_sam_som_logic
+        validate_tam_sam_som_logic,
     ],
     before_agent_callback=market_validation_setup_callback,
     after_model_callback=market_validation_callback,

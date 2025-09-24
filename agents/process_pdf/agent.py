@@ -42,7 +42,9 @@ async def data_consolidation_setup_callback(callback_context, **_kwargs):
         # Create a session-unique filename to avoid collisions
         try:
             session_id = None
-            if hasattr(callback_context, "_invocation_context") and getattr(callback_context._invocation_context, "session", None):
+            if hasattr(callback_context, "_invocation_context") and getattr(
+                callback_context._invocation_context, "session", None
+            ):
                 session_id = callback_context._invocation_context.session.id
             fname = f"report_{session_id or 'anon'}.pdf"
         except Exception:
@@ -66,7 +68,7 @@ def data_consolidation_after_callback(
     # Save LlmResponse content and state to files
     if llm_response.content and llm_response.content.parts:
         save_llm_response_to_file(
-            filename="process_pdf_agent",
+            filename="pdf_llm",
             llm_content=llm_response.content,
             session_path=get_session_dir(callback_context),
             file_type="json",
@@ -76,7 +78,7 @@ def data_consolidation_after_callback(
         save_state_to_file(
             context=callback_context,
             session_path=get_session_dir(callback_context),
-            filename="process_pdf_agent",
+            filename="pdf_state",
             file_type="json",
         )
 
@@ -108,12 +110,16 @@ async def process_pdf_tool(tool_context: ToolContext) -> str:
             # Try to find uploaded filename in session/tool state
             candidate_name = None
             try:
-                candidate_name = getattr(tool_context, "state", {}).get("uploaded_report_filename")
+                candidate_name = getattr(tool_context, "state", {}).get(
+                    "uploaded_report_filename"
+                )
             except Exception:
                 candidate_name = None
 
             if candidate_name:
-                report_artifact = await tool_context.load_artifact(filename=candidate_name)
+                report_artifact = await tool_context.load_artifact(
+                    filename=candidate_name
+                )
 
             if not report_artifact:
                 # Fallback to listing artifacts and picking the most recent
@@ -121,7 +127,9 @@ async def process_pdf_tool(tool_context: ToolContext) -> str:
                 if available:
                     # Use the last item in the list (assumed latest)
                     last_name = available[-1]
-                    report_artifact = await tool_context.load_artifact(filename=last_name)
+                    report_artifact = await tool_context.load_artifact(
+                        filename=last_name
+                    )
 
         except Exception as e:
             logger.warning(f"Could not load artifact by name: {e}")

@@ -5,7 +5,8 @@ Prompts for the Founder Profile Orchestrator Agent
 QUERY_GENERATOR_INSTRUCTION = """Generate effective search queries combining founder names with their professional claims for comprehensive verification.
 
 ## Input Data Source
-Extract team and founder information from the structured JSON data in {pdf_processor_agent_output}, specifically from the "team" section which contains:
+Extract team and founder information from the structured JSON data provided in the user message.
+Look for the "team" section which contains:
 - founders: Array of founder objects with name, title, bio, linkedin
 - key_team_members: Array of key team members with name, title, bio, linkedin
 - advisors: Array of advisors with name, bio, linkedin

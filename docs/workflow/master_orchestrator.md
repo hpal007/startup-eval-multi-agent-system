@@ -20,7 +20,7 @@ graph TD
     B --> D[Founder Profile Orchestrator]
     B --> E[Competitor Profile Orchestrator]
     B --> F[Business KPIs Orchestrator]
-    
+
     C --> G[Extract & Process Pitch Content]
     D --> H[Team Verification & Analysis]
     E --> I[Competitive Landscape Assessment]

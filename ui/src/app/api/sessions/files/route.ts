@@ -23,9 +23,7 @@ export async function POST(request: NextRequest) {
   const dirName = sessionDirname || `${userId}_${sessionId}_startup-eval`
     const sessionPath = path.join(sessionsDir, dirName)
 
-    console.log('[sessions/files] checking path:', sessionPath)
     if (!fs.existsSync(sessionPath)) {
-      console.log('[sessions/files] path does not exist')
       return NextResponse.json({ files: [] })
     }
 

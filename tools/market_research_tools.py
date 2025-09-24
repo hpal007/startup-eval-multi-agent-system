@@ -11,7 +11,9 @@ from tools.search_tool import concise_google_search, search_indian_news
 logger = logging.getLogger(__name__)
 
 
-def market_size_validation_search(market_segment: str, market_size_type: str = "TAM") -> str:
+def market_size_validation_search(
+    market_segment: str, market_size_type: str = "TAM"
+) -> str:
     """
     Search for market size validation data from authoritative sources.
 
@@ -29,7 +31,7 @@ def market_size_validation_search(market_segment: str, market_size_type: str = "
     validation_queries = [
         f"{market_segment} market size {market_size_type} 2024 Gartner",
         f"{market_segment} market research Forrester McKinsey",
-        f"{market_segment} industry report market value"
+        f"{market_segment} industry report market value",
     ]
 
     results = []
@@ -42,7 +44,11 @@ def market_size_validation_search(market_segment: str, market_size_type: str = "
             logger.warning(f"Failed search '{query}': {e}")
             continue
 
-    return "\n\n".join(results) if results else f"No market size validation data found for {market_segment} {market_size_type}"
+    return (
+        "\n\n".join(results)
+        if results
+        else f"No market size validation data found for {market_segment} {market_size_type}"
+    )
 
 
 def industry_benchmark_search(industry: str, kpi_name: str) -> str:
@@ -63,7 +69,7 @@ def industry_benchmark_search(industry: str, kpi_name: str) -> str:
     benchmark_queries = [
         f"{industry} {kpi_name} industry benchmark average",
         f"{industry} {kpi_name} industry standard typical range",
-        f"{industry} companies {kpi_name} benchmark report"
+        f"{industry} companies {kpi_name} benchmark report",
     ]
 
     results = []
@@ -76,7 +82,11 @@ def industry_benchmark_search(industry: str, kpi_name: str) -> str:
             logger.warning(f"Failed search '{query}': {e}")
             continue
 
-    return "\n\n".join(results) if results else f"No benchmark data found for {kpi_name} in {industry} industry"
+    return (
+        "\n\n".join(results)
+        if results
+        else f"No benchmark data found for {kpi_name} in {industry} industry"
+    )
 
 
 def industry_report_search(industry: str, report_type: str = "market_analysis") -> str:
@@ -97,22 +107,22 @@ def industry_report_search(industry: str, report_type: str = "market_analysis") 
     if report_type == "trends":
         report_queries = [
             f"{industry} industry trends 2024 emerging",
-            f"{industry} market trends technology innovation"
+            f"{industry} market trends technology innovation",
         ]
     elif report_type == "regulatory":
         report_queries = [
             f"{industry} regulatory changes compliance 2024",
-            f"{industry} industry regulations policy impact"
+            f"{industry} industry regulations policy impact",
         ]
     elif report_type == "competitive":
         report_queries = [
             f"{industry} competitive landscape analysis",
-            f"{industry} market competition report"
+            f"{industry} market competition report",
         ]
     else:  # market_analysis
         report_queries = [
             f"{industry} market analysis report 2024",
-            f"{industry} industry overview market research"
+            f"{industry} industry overview market research",
         ]
 
     results = []
@@ -125,7 +135,11 @@ def industry_report_search(industry: str, report_type: str = "market_analysis") 
             logger.warning(f"Failed search '{query}': {e}")
             continue
 
-    return "\n\n".join(results) if results else f"No industry reports found for {industry} ({report_type})"
+    return (
+        "\n\n".join(results)
+        if results
+        else f"No industry reports found for {industry} ({report_type})"
+    )
 
 
 def kpi_validation_search(company_name: str, kpi_name: str, claimed_value: str) -> str:
@@ -147,7 +161,7 @@ def kpi_validation_search(company_name: str, kpi_name: str, claimed_value: str) 
     validation_queries = [
         f"{company_name} {kpi_name} performance metrics",
         f"{kpi_name} {claimed_value} industry comparison",
-        f"{company_name} financial metrics {kpi_name}"
+        f"{company_name} financial metrics {kpi_name}",
     ]
 
     results = []
@@ -168,7 +182,11 @@ def kpi_validation_search(company_name: str, kpi_name: str, claimed_value: str) 
     except Exception as e:
         logger.warning(f"Failed news search: {e}")
 
-    return "\n\n".join(results) if results else f"No validation data found for {company_name}'s {kpi_name} claim of {claimed_value}"
+    return (
+        "\n\n".join(results)
+        if results
+        else f"No validation data found for {company_name}'s {kpi_name} claim of {claimed_value}"
+    )
 
 
 def funding_validation_search(company_name: str, claimed_funding: str) -> str:
@@ -189,7 +207,7 @@ def funding_validation_search(company_name: str, claimed_funding: str) -> str:
     funding_queries = [
         f"{company_name} funding {claimed_funding} series round",
         f"{company_name} investment valuation {claimed_funding}",
-        f"{company_name} funding announcement {claimed_funding}"
+        f"{company_name} funding announcement {claimed_funding}",
     ]
 
     results = []
@@ -210,10 +228,16 @@ def funding_validation_search(company_name: str, claimed_funding: str) -> str:
     except Exception as e:
         logger.warning(f"Failed news search: {e}")
 
-    return "\n\n".join(results) if results else f"No funding validation data found for {company_name}'s claim of {claimed_funding}"
+    return (
+        "\n\n".join(results)
+        if results
+        else f"No funding validation data found for {company_name}'s claim of {claimed_funding}"
+    )
 
 
-def comprehensive_market_research(market_segment: str, research_focus: str = "comprehensive") -> str:
+def comprehensive_market_research(
+    market_segment: str, research_focus: str = "comprehensive"
+) -> str:
     """
     Perform comprehensive market research combining multiple search strategies.
 
@@ -252,17 +276,21 @@ def comprehensive_market_research(market_segment: str, research_focus: str = "co
         if result:
             formatted_results.append(f"## {area.replace('_', ' ').title()}\n\n{result}")
 
-    return "\n\n---\n\n".join(formatted_results) if formatted_results else f"No comprehensive market research data found for {market_segment}"
+    return (
+        "\n\n---\n\n".join(formatted_results)
+        if formatted_results
+        else f"No comprehensive market research data found for {market_segment}"
+    )
 
 
 # Export the market research tools
 __all__ = [
-    'comprehensive_market_research',
-    'funding_validation_search',
-    'industry_benchmark_search',
-    'industry_report_search',
-    'kpi_validation_search',
-    'market_size_validation_search'
+    "comprehensive_market_research",
+    "funding_validation_search",
+    "industry_benchmark_search",
+    "industry_report_search",
+    "kpi_validation_search",
+    "market_size_validation_search",
 ]
 
 
@@ -271,74 +299,189 @@ __all__ = [
 # Industry sector mappings and specialized search strategies
 INDUSTRY_SEARCH_STRATEGIES = {
     "fintech": {
-        "keywords": ["financial technology", "digital payments", "blockchain", "cryptocurrency", "neobank", "regtech"],
+        "keywords": [
+            "financial technology",
+            "digital payments",
+            "blockchain",
+            "cryptocurrency",
+            "neobank",
+            "regtech",
+        ],
         "regulatory_terms": ["PCI DSS", "KYC", "AML", "GDPR", "PSD2", "Basel III"],
         "sources": ["fintech news", "banking technology", "payments journal"],
-        "kpi_focus": ["transaction volume", "user acquisition cost", "regulatory compliance cost"]
+        "kpi_focus": [
+            "transaction volume",
+            "user acquisition cost",
+            "regulatory compliance cost",
+        ],
     },
     "healthtech": {
-        "keywords": ["digital health", "telemedicine", "health informatics", "medical devices", "pharma tech"],
-        "regulatory_terms": ["HIPAA", "FDA approval", "clinical trials", "medical device regulation", "health data privacy"],
+        "keywords": [
+            "digital health",
+            "telemedicine",
+            "health informatics",
+            "medical devices",
+            "pharma tech",
+        ],
+        "regulatory_terms": [
+            "HIPAA",
+            "FDA approval",
+            "clinical trials",
+            "medical device regulation",
+            "health data privacy",
+        ],
         "sources": ["healthcare IT news", "medical device network", "digital health"],
-        "kpi_focus": ["patient outcomes", "clinical efficacy", "regulatory approval time"]
+        "kpi_focus": [
+            "patient outcomes",
+            "clinical efficacy",
+            "regulatory approval time",
+        ],
     },
     "edtech": {
-        "keywords": ["educational technology", "e-learning", "online education", "learning management", "educational software"],
-        "regulatory_terms": ["FERPA", "COPPA", "accessibility compliance", "educational standards"],
-        "sources": ["education technology", "elearning industry", "educational research"],
-        "kpi_focus": ["student engagement", "learning outcomes", "teacher adoption rate"]
+        "keywords": [
+            "educational technology",
+            "e-learning",
+            "online education",
+            "learning management",
+            "educational software",
+        ],
+        "regulatory_terms": [
+            "FERPA",
+            "COPPA",
+            "accessibility compliance",
+            "educational standards",
+        ],
+        "sources": [
+            "education technology",
+            "elearning industry",
+            "educational research",
+        ],
+        "kpi_focus": [
+            "student engagement",
+            "learning outcomes",
+            "teacher adoption rate",
+        ],
     },
     "saas": {
-        "keywords": ["software as a service", "cloud computing", "enterprise software", "business applications"],
+        "keywords": [
+            "software as a service",
+            "cloud computing",
+            "enterprise software",
+            "business applications",
+        ],
         "regulatory_terms": ["SOC 2", "ISO 27001", "data protection", "cloud security"],
         "sources": ["software industry", "cloud computing news", "enterprise tech"],
-        "kpi_focus": ["monthly recurring revenue", "churn rate", "customer acquisition cost", "net revenue retention"]
+        "kpi_focus": [
+            "monthly recurring revenue",
+            "churn rate",
+            "customer acquisition cost",
+            "net revenue retention",
+        ],
     },
     "ecommerce": {
-        "keywords": ["online retail", "digital commerce", "marketplace", "retail technology"],
-        "regulatory_terms": ["consumer protection", "data privacy", "payment regulations", "tax compliance"],
+        "keywords": [
+            "online retail",
+            "digital commerce",
+            "marketplace",
+            "retail technology",
+        ],
+        "regulatory_terms": [
+            "consumer protection",
+            "data privacy",
+            "payment regulations",
+            "tax compliance",
+        ],
         "sources": ["retail technology", "ecommerce news", "digital commerce"],
-        "kpi_focus": ["conversion rate", "average order value", "customer lifetime value", "cart abandonment rate"]
+        "kpi_focus": [
+            "conversion rate",
+            "average order value",
+            "customer lifetime value",
+            "cart abandonment rate",
+        ],
     },
     "mobility": {
-        "keywords": ["transportation technology", "ride sharing", "autonomous vehicles", "logistics tech"],
-        "regulatory_terms": ["transportation regulations", "vehicle safety", "driver regulations", "emissions standards"],
+        "keywords": [
+            "transportation technology",
+            "ride sharing",
+            "autonomous vehicles",
+            "logistics tech",
+        ],
+        "regulatory_terms": [
+            "transportation regulations",
+            "vehicle safety",
+            "driver regulations",
+            "emissions standards",
+        ],
         "sources": ["transportation technology", "mobility news", "automotive tech"],
-        "kpi_focus": ["ride completion rate", "driver utilization", "safety metrics", "operational efficiency"]
-    }
+        "kpi_focus": [
+            "ride completion rate",
+            "driver utilization",
+            "safety metrics",
+            "operational efficiency",
+        ],
+    },
 }
 
 # Source credibility weights for different types of sources
 SOURCE_CREDIBILITY_WEIGHTS = {
     "tier1_research": 1.0,  # Gartner, Forrester, McKinsey, BCG
     "tier2_research": 0.8,  # Industry-specific research firms
-    "government": 0.9,      # Government reports and statistics
+    "government": 0.9,  # Government reports and statistics
     "industry_association": 0.7,  # Industry association reports
-    "major_news": 0.6,      # Major business news outlets
+    "major_news": 0.6,  # Major business news outlets
     "trade_publication": 0.5,  # Industry trade publications
     "company_reports": 0.4,  # Company annual reports, press releases
-    "blog_opinion": 0.2,    # Blog posts, opinion pieces
-    "unknown": 0.3          # Unknown or unverified sources
+    "blog_opinion": 0.2,  # Blog posts, opinion pieces
+    "unknown": 0.3,  # Unknown or unverified sources
 }
 
 # Tier 1 research firms and authoritative sources
 TIER1_SOURCES = [
-    "gartner", "forrester", "mckinsey", "bcg", "bain", "deloitte", "pwc", "kpmg", "ey",
-    "idc", "frost & sullivan", "ovum", "451 research"
+    "gartner",
+    "forrester",
+    "mckinsey",
+    "bcg",
+    "bain",
+    "deloitte",
+    "pwc",
+    "kpmg",
+    "ey",
+    "idc",
+    "frost & sullivan",
+    "ovum",
+    "451 research",
 ]
 
 GOVERNMENT_SOURCES = [
-    "sec.gov", "treasury.gov", "federalreserve.gov", "census.gov", "bls.gov", "sba.gov",
-    "europa.eu", "gov.uk", "rbi.org.in", "sebi.gov.in"
+    "sec.gov",
+    "treasury.gov",
+    "federalreserve.gov",
+    "census.gov",
+    "bls.gov",
+    "sba.gov",
+    "europa.eu",
+    "gov.uk",
+    "rbi.org.in",
+    "sebi.gov.in",
 ]
 
 MAJOR_NEWS_SOURCES = [
-    "reuters", "bloomberg", "wsj", "ft.com", "economist", "forbes", "techcrunch",
-    "venturebeat", "crunchbase", "pitchbook"
+    "reuters",
+    "bloomberg",
+    "wsj",
+    "ft.com",
+    "economist",
+    "forbes",
+    "techcrunch",
+    "venturebeat",
+    "crunchbase",
+    "pitchbook",
 ]
 
 
-def industry_specific_search(industry: str, search_type: str, query_context: str = "") -> str:
+def industry_specific_search(
+    industry: str, search_type: str, query_context: str = ""
+) -> str:
     """
     Perform industry-specific search using specialized strategies and keywords.
 
@@ -364,7 +507,9 @@ def industry_specific_search(industry: str, search_type: str, query_context: str
 
     if search_type == "regulatory":
         for reg_term in industry_config["regulatory_terms"][:3]:
-            specialized_queries.append(f"{industry} {reg_term} compliance requirements 2024")
+            specialized_queries.append(
+                f"{industry} {reg_term} compliance requirements 2024"
+            )
             specialized_queries.append(f"{reg_term} impact {industry} industry")
 
     elif search_type == "competitive":
@@ -384,7 +529,9 @@ def industry_specific_search(industry: str, search_type: str, query_context: str
 
     # Add query context if provided
     if query_context:
-        specialized_queries = [f"{query} {query_context}" for query in specialized_queries]
+        specialized_queries = [
+            f"{query} {query_context}" for query in specialized_queries
+        ]
 
     # Execute specialized searches
     results = []
@@ -399,7 +546,11 @@ def industry_specific_search(industry: str, search_type: str, query_context: str
             logger.warning(f"Failed specialized search '{query}': {e}")
             continue
 
-    return "\n\n".join(results) if results else f"No specialized search results found for {industry} {search_type}"
+    return (
+        "\n\n".join(results)
+        if results
+        else f"No specialized search results found for {industry} {search_type}"
+    )
 
 
 def regulatory_change_detection(industry: str, time_period: str = "2024") -> str:
@@ -417,25 +568,31 @@ def regulatory_change_detection(industry: str, time_period: str = "2024") -> str
 
     # Get industry-specific regulatory terms
     if industry_lower in INDUSTRY_SEARCH_STRATEGIES:
-        regulatory_terms = INDUSTRY_SEARCH_STRATEGIES[industry_lower]["regulatory_terms"]
+        regulatory_terms = INDUSTRY_SEARCH_STRATEGIES[industry_lower][
+            "regulatory_terms"
+        ]
     else:
         regulatory_terms = ["regulation", "compliance", "policy changes"]
 
     # Build regulatory change detection queries
     regulatory_queries = []
     for reg_term in regulatory_terms[:3]:
-        regulatory_queries.extend([
-            f"{reg_term} changes {time_period} {industry}",
-            f"new {reg_term} requirements {industry} {time_period}",
-            f"{reg_term} updates impact {industry} companies"
-        ])
+        regulatory_queries.extend(
+            [
+                f"{reg_term} changes {time_period} {industry}",
+                f"new {reg_term} requirements {industry} {time_period}",
+                f"{reg_term} updates impact {industry} companies",
+            ]
+        )
 
     # Add general regulatory change queries
-    regulatory_queries.extend([
-        f"{industry} regulatory changes {time_period}",
-        f"{industry} compliance requirements updates {time_period}",
-        f"{industry} policy changes government {time_period}"
-    ])
+    regulatory_queries.extend(
+        [
+            f"{industry} regulatory changes {time_period}",
+            f"{industry} compliance requirements updates {time_period}",
+            f"{industry} policy changes government {time_period}",
+        ]
+    )
 
     results = []
     for query in regulatory_queries[:5]:  # Limit queries for performance
@@ -443,7 +600,9 @@ def regulatory_change_detection(industry: str, time_period: str = "2024") -> str
             result = concise_google_search(query)
             if result and "fallback" not in result.lower():
                 # Apply higher credibility weighting for government sources
-                weighted_result = _apply_source_credibility_weighting(result, query, boost_government=True)
+                weighted_result = _apply_source_credibility_weighting(
+                    result, query, boost_government=True
+                )
                 results.append(f"**Regulatory Query: {query}**\n{weighted_result}")
         except Exception as e:
             logger.warning(f"Failed regulatory search '{query}': {e}")
@@ -508,7 +667,9 @@ def source_credibility_analysis(search_results: str, query_context: str = "") ->
     return analysis_summary + "\n".join(credibility_analysis)
 
 
-def _apply_source_credibility_weighting(search_result: str, query: str, boost_government: bool = False) -> str:
+def _apply_source_credibility_weighting(
+    search_result: str, query: str, boost_government: bool = False
+) -> str:
     """Apply credibility weighting to search results."""
     # Extract potential sources from the result
     result_lower = search_result.lower()
@@ -525,7 +686,11 @@ def _apply_source_credibility_weighting(search_result: str, query: str, boost_go
     # Check for government sources
     for source in GOVERNMENT_SOURCES:
         if source in result_lower:
-            weight = "[VERY HIGH CREDIBILITY: GOVERNMENT SOURCE]" if boost_government else "[HIGH CREDIBILITY: GOVERNMENT]"
+            weight = (
+                "[VERY HIGH CREDIBILITY: GOVERNMENT SOURCE]"
+                if boost_government
+                else "[HIGH CREDIBILITY: GOVERNMENT]"
+            )
             credibility_indicators.append(weight)
             break
 
@@ -547,7 +712,7 @@ def _extract_sources_from_results(search_results: str) -> dict[str, str]:
     sources = {}
 
     # Simple extraction based on common patterns
-    lines = search_results.split('\n')
+    lines = search_results.split("\n")
     current_source = "Unknown"
     current_content = ""
 
@@ -560,7 +725,11 @@ def _extract_sources_from_results(search_results: str) -> dict[str, str]:
         line_lower = line.lower()
         source_found = None
 
-        for source in TIER1_SOURCES + [s.replace('.', '') for s in GOVERNMENT_SOURCES] + MAJOR_NEWS_SOURCES:
+        for source in (
+            TIER1_SOURCES
+            + [s.replace(".", "") for s in GOVERNMENT_SOURCES]
+            + MAJOR_NEWS_SOURCES
+        ):
             if source in line_lower:
                 source_found = source
                 break
@@ -623,9 +792,28 @@ def _assess_regulatory_impact(industry: str, regulatory_results: list[str]) -> s
     """Assess the potential impact of regulatory changes on an industry."""
     # Simple impact assessment based on keyword analysis
     impact_keywords = {
-        "high_impact": ["mandatory", "required", "compliance deadline", "penalty", "fine", "enforcement"],
-        "medium_impact": ["recommended", "guidance", "best practice", "voluntary", "phased implementation"],
-        "low_impact": ["proposed", "under review", "consultation", "draft", "preliminary"]
+        "high_impact": [
+            "mandatory",
+            "required",
+            "compliance deadline",
+            "penalty",
+            "fine",
+            "enforcement",
+        ],
+        "medium_impact": [
+            "recommended",
+            "guidance",
+            "best practice",
+            "voluntary",
+            "phased implementation",
+        ],
+        "low_impact": [
+            "proposed",
+            "under review",
+            "consultation",
+            "draft",
+            "preliminary",
+        ],
     }
 
     impact_scores = {"high": 0, "medium": 0, "low": 0}
@@ -644,10 +832,14 @@ def _assess_regulatory_impact(industry: str, regulatory_results: list[str]) -> s
         impact_description = "Significant regulatory changes requiring immediate attention and compliance measures."
     elif impact_scores["medium"] >= 2 or impact_scores["high"] >= 1:
         overall_impact = "Medium"
-        impact_description = "Moderate regulatory changes that may require operational adjustments."
+        impact_description = (
+            "Moderate regulatory changes that may require operational adjustments."
+        )
     else:
         overall_impact = "Low"
-        impact_description = "Minor or proposed regulatory changes with limited immediate impact."
+        impact_description = (
+            "Minor or proposed regulatory changes with limited immediate impact."
+        )
 
     return (
         f"Overall Impact Level: {overall_impact}\n"
@@ -658,13 +850,13 @@ def _assess_regulatory_impact(industry: str, regulatory_results: list[str]) -> s
 
 # Update the __all__ export list
 __all__ = [
-    'comprehensive_market_research',
-    'funding_validation_search',
-    'industry_benchmark_search',
-    'industry_report_search',
-    'industry_specific_search',
-    'kpi_validation_search',
-    'market_size_validation_search',
-    'regulatory_change_detection',
-    'source_credibility_analysis'
+    "comprehensive_market_research",
+    "funding_validation_search",
+    "industry_benchmark_search",
+    "industry_report_search",
+    "industry_specific_search",
+    "kpi_validation_search",
+    "market_size_validation_search",
+    "regulatory_change_detection",
+    "source_credibility_analysis",
 ]

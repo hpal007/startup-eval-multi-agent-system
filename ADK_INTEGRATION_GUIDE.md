@@ -215,7 +215,7 @@ console.log(window.ADKApp.deploymentManager.getDeploymentInfo());
 After successful integration, consider:
 
 1. **Custom Branding**: Update styles and branding elements
-2. **Additional Features**: Add custom processing steps or UI enhancements  
+2. **Additional Features**: Add custom processing steps or UI enhancements
 3. **Monitoring**: Implement application monitoring and analytics
 4. **Performance**: Optimize for your specific use cases
 

@@ -9,9 +9,13 @@ import logging
 from typing import Any
 
 from google.adk.agents import Agent
+from google.adk.agents.callback_context import CallbackContext
+from google.adk.models import LlmResponse
 from google.genai import types
 
+
 from utils.configs import config
+from utils.helper import get_session_dir, save_llm_response_to_file, save_state_to_file
 
 from . import prompt
 
@@ -19,7 +23,9 @@ logger = logging.getLogger(__name__)
 MODEL = config.get_model_for_agent("abc_agent")
 
 
-def industry_taxonomy_matching_tool(startup_description: str, business_model: str) -> dict[str, Any]:
+def industry_taxonomy_matching_tool(
+    startup_description: str, business_model: str
+) -> dict[str, Any]:
     """
     Advanced tool for matching startup characteristics to industry taxonomy with weighted scoring.
 
@@ -33,73 +39,185 @@ def industry_taxonomy_matching_tool(startup_description: str, business_model: st
     # Enhanced industry keyword mappings with weights
     industry_keywords = {
         "saas": {
-            "high_weight": ["saas", "software as a service", "subscription software", "cloud software"],
-            "medium_weight": ["software", "subscription", "cloud", "platform", "api", "dashboard"],
-            "low_weight": ["analytics", "automation", "integration", "workflow"]
+            "high_weight": [
+                "saas",
+                "software as a service",
+                "subscription software",
+                "cloud software",
+            ],
+            "medium_weight": [
+                "software",
+                "subscription",
+                "cloud",
+                "platform",
+                "api",
+                "dashboard",
+            ],
+            "low_weight": ["analytics", "automation", "integration", "workflow"],
         },
         "ecommerce": {
-            "high_weight": ["ecommerce", "e-commerce", "online store", "retail platform"],
-            "medium_weight": ["retail", "marketplace", "shopping", "store", "products", "inventory"],
-            "low_weight": ["fulfillment", "shipping", "catalog", "checkout"]
+            "high_weight": [
+                "ecommerce",
+                "e-commerce",
+                "online store",
+                "retail platform",
+            ],
+            "medium_weight": [
+                "retail",
+                "marketplace",
+                "shopping",
+                "store",
+                "products",
+                "inventory",
+            ],
+            "low_weight": ["fulfillment", "shipping", "catalog", "checkout"],
         },
         "fintech": {
-            "high_weight": ["fintech", "financial technology", "payment processing", "digital banking"],
-            "medium_weight": ["financial", "payment", "banking", "lending", "investment", "insurance"],
-            "low_weight": ["crypto", "blockchain", "wallet", "trading"]
+            "high_weight": [
+                "fintech",
+                "financial technology",
+                "payment processing",
+                "digital banking",
+            ],
+            "medium_weight": [
+                "financial",
+                "payment",
+                "banking",
+                "lending",
+                "investment",
+                "insurance",
+            ],
+            "low_weight": ["crypto", "blockchain", "wallet", "trading"],
         },
         "healthcare": {
-            "high_weight": ["healthcare", "health tech", "medical technology", "digital health"],
-            "medium_weight": ["medical", "health", "biotech", "pharmaceutical", "clinical"],
-            "low_weight": ["patient", "therapy", "diagnosis", "treatment"]
+            "high_weight": [
+                "healthcare",
+                "health tech",
+                "medical technology",
+                "digital health",
+            ],
+            "medium_weight": [
+                "medical",
+                "health",
+                "biotech",
+                "pharmaceutical",
+                "clinical",
+            ],
+            "low_weight": ["patient", "therapy", "diagnosis", "treatment"],
         },
         "marketplace": {
-            "high_weight": ["marketplace", "two-sided platform", "multi-sided platform"],
-            "medium_weight": ["platform", "network", "connect", "matching", "gig economy"],
-            "low_weight": ["commission", "take rate", "network effects"]
+            "high_weight": [
+                "marketplace",
+                "two-sided platform",
+                "multi-sided platform",
+            ],
+            "medium_weight": [
+                "platform",
+                "network",
+                "connect",
+                "matching",
+                "gig economy",
+            ],
+            "low_weight": ["commission", "take rate", "network effects"],
         },
         "consumer": {
             "high_weight": ["consumer app", "b2c platform", "lifestyle brand"],
-            "medium_weight": ["consumer", "lifestyle", "entertainment", "gaming", "social"],
-            "low_weight": ["mobile app", "user engagement", "viral"]
+            "medium_weight": [
+                "consumer",
+                "lifestyle",
+                "entertainment",
+                "gaming",
+                "social",
+            ],
+            "low_weight": ["mobile app", "user engagement", "viral"],
         },
         "enterprise": {
-            "high_weight": ["enterprise software", "b2b services", "business solutions"],
-            "medium_weight": ["enterprise", "b2b", "business", "consulting", "services"],
-            "low_weight": ["professional", "corporate", "workflow"]
+            "high_weight": [
+                "enterprise software",
+                "b2b services",
+                "business solutions",
+            ],
+            "medium_weight": [
+                "enterprise",
+                "b2b",
+                "business",
+                "consulting",
+                "services",
+            ],
+            "low_weight": ["professional", "corporate", "workflow"],
         },
         "hardware": {
-            "high_weight": ["hardware", "iot platform", "smart devices", "manufacturing"],
+            "high_weight": [
+                "hardware",
+                "iot platform",
+                "smart devices",
+                "manufacturing",
+            ],
             "medium_weight": ["device", "physical product", "sensor", "embedded"],
-            "low_weight": ["connectivity", "firmware", "components"]
-        }
+            "low_weight": ["connectivity", "firmware", "components"],
+        },
     }
 
     # Revenue model indicators with confidence weights
     revenue_models = {
         "subscription": {
-            "indicators": ["subscription", "recurring", "monthly", "annual", "mrr", "arr", "saas"],
-            "confidence_boost": 0.2
+            "indicators": [
+                "subscription",
+                "recurring",
+                "monthly",
+                "annual",
+                "mrr",
+                "arr",
+                "saas",
+            ],
+            "confidence_boost": 0.2,
         },
         "transaction": {
-            "indicators": ["transaction", "commission", "take rate", "gmv", "marketplace", "payment"],
-            "confidence_boost": 0.15
+            "indicators": [
+                "transaction",
+                "commission",
+                "take rate",
+                "gmv",
+                "marketplace",
+                "payment",
+            ],
+            "confidence_boost": 0.15,
         },
         "product_sales": {
-            "indicators": ["sales", "product", "unit", "inventory", "retail", "ecommerce"],
-            "confidence_boost": 0.1
+            "indicators": [
+                "sales",
+                "product",
+                "unit",
+                "inventory",
+                "retail",
+                "ecommerce",
+            ],
+            "confidence_boost": 0.1,
         },
         "advertising": {
-            "indicators": ["advertising", "ads", "sponsored", "monetization", "impressions"],
-            "confidence_boost": 0.1
+            "indicators": [
+                "advertising",
+                "ads",
+                "sponsored",
+                "monetization",
+                "impressions",
+            ],
+            "confidence_boost": 0.1,
         },
         "freemium": {
             "indicators": ["freemium", "free tier", "premium", "upgrade", "conversion"],
-            "confidence_boost": 0.15
+            "confidence_boost": 0.15,
         },
         "licensing": {
-            "indicators": ["licensing", "royalty", "ip", "patent", "technology licensing"],
-            "confidence_boost": 0.1
-        }
+            "indicators": [
+                "licensing",
+                "royalty",
+                "ip",
+                "patent",
+                "technology licensing",
+            ],
+            "confidence_boost": 0.1,
+        },
     }
 
     text_to_analyze = f"{startup_description} {business_model}".lower()
@@ -141,8 +259,12 @@ def industry_taxonomy_matching_tool(startup_description: str, business_model: st
             confidence_boosts[model] = config["confidence_boost"]
 
     # Determine top classifications
-    top_industry = max(industry_scores.items(), key=lambda x: x[1]) if industry_scores else None
-    top_revenue_model = max(revenue_scores.items(), key=lambda x: x[1]) if revenue_scores else None
+    top_industry = (
+        max(industry_scores.items(), key=lambda x: x[1]) if industry_scores else None
+    )
+    top_revenue_model = (
+        max(revenue_scores.items(), key=lambda x: x[1]) if revenue_scores else None
+    )
 
     return {
         "industry_scores": industry_scores,
@@ -150,11 +272,15 @@ def industry_taxonomy_matching_tool(startup_description: str, business_model: st
         "confidence_boosts": confidence_boosts,
         "top_industry": top_industry,
         "top_revenue_model": top_revenue_model,
-        "classification_strength": max(industry_scores.values()) if industry_scores else 0.0
+        "classification_strength": max(industry_scores.values())
+        if industry_scores
+        else 0.0,
     }
 
 
-def business_model_analysis_tool(business_model: str, target_customers: str) -> dict[str, Any]:
+def business_model_analysis_tool(
+    business_model: str, target_customers: str
+) -> dict[str, Any]:
     """
     Enhanced tool for analyzing business model characteristics and customer segments.
 
@@ -168,53 +294,98 @@ def business_model_analysis_tool(business_model: str, target_customers: str) -> 
     # Customer segment indicators with confidence weights
     customer_segments = {
         "b2b": {
-            "strong": ["enterprise", "b2b", "business-to-business", "corporate clients"],
+            "strong": [
+                "enterprise",
+                "b2b",
+                "business-to-business",
+                "corporate clients",
+            ],
             "medium": ["business", "company", "organization", "professional"],
-            "weak": ["workplace", "office", "team", "department"]
+            "weak": ["workplace", "office", "team", "department"],
         },
         "b2c": {
             "strong": ["consumer", "b2c", "business-to-consumer", "individual users"],
             "medium": ["individual", "personal", "customer", "user"],
-            "weak": ["people", "person", "end-user", "retail"]
+            "weak": ["people", "person", "end-user", "retail"],
         },
         "b2b2c": {
             "strong": ["b2b2c", "white label", "partner platform"],
             "medium": ["partner", "reseller", "channel", "distributor"],
-            "weak": ["indirect", "through partners", "via partners"]
+            "weak": ["indirect", "through partners", "via partners"],
         },
         "government": {
             "strong": ["government", "public sector", "municipal"],
             "medium": ["federal", "state", "local government"],
-            "weak": ["civic", "public", "administration"]
-        }
+            "weak": ["civic", "public", "administration"],
+        },
     }
 
     # Scalability indicators with impact scores
     scalability_factors = {
         "network_effects": {
-            "indicators": ["network", "viral", "referral", "community", "social", "network effects"],
-            "impact_score": 3
+            "indicators": [
+                "network",
+                "viral",
+                "referral",
+                "community",
+                "social",
+                "network effects",
+            ],
+            "impact_score": 3,
         },
         "automation": {
-            "indicators": ["automated", "ai", "machine learning", "algorithm", "self-service", "no-code"],
-            "impact_score": 2
+            "indicators": [
+                "automated",
+                "ai",
+                "machine learning",
+                "algorithm",
+                "self-service",
+                "no-code",
+            ],
+            "impact_score": 2,
         },
         "digital_delivery": {
-            "indicators": ["digital", "cloud", "online", "remote", "virtual", "software"],
-            "impact_score": 2
+            "indicators": [
+                "digital",
+                "cloud",
+                "online",
+                "remote",
+                "virtual",
+                "software",
+            ],
+            "impact_score": 2,
         },
         "recurring_revenue": {
-            "indicators": ["recurring", "subscription", "retention", "lifetime value", "mrr", "arr"],
-            "impact_score": 3
+            "indicators": [
+                "recurring",
+                "subscription",
+                "retention",
+                "lifetime value",
+                "mrr",
+                "arr",
+            ],
+            "impact_score": 3,
         },
         "marketplace_dynamics": {
-            "indicators": ["marketplace", "platform", "two-sided", "multi-sided", "ecosystem"],
-            "impact_score": 3
+            "indicators": [
+                "marketplace",
+                "platform",
+                "two-sided",
+                "multi-sided",
+                "ecosystem",
+            ],
+            "impact_score": 3,
         },
         "data_network_effects": {
-            "indicators": ["data", "machine learning", "personalization", "recommendation", "intelligence"],
-            "impact_score": 2
-        }
+            "indicators": [
+                "data",
+                "machine learning",
+                "personalization",
+                "recommendation",
+                "intelligence",
+            ],
+            "impact_score": 2,
+        },
     }
 
     text_to_analyze = f"{business_model} {target_customers}".lower()
@@ -250,26 +421,38 @@ def business_model_analysis_tool(business_model: str, target_customers: str) -> 
     scalability_analysis = {}
     total_scalability_score = 0
     for factor, config in scalability_factors.items():
-        matches = sum(1 for indicator in config["indicators"] if indicator in text_to_analyze)
+        matches = sum(
+            1 for indicator in config["indicators"] if indicator in text_to_analyze
+        )
         if matches > 0:
-            factor_score = (matches / len(config["indicators"])) * config["impact_score"]
+            factor_score = (matches / len(config["indicators"])) * config[
+                "impact_score"
+            ]
             scalability_analysis[factor] = {
                 "presence": matches > 0,
                 "strength": matches / len(config["indicators"]),
-                "weighted_score": factor_score
+                "weighted_score": factor_score,
             }
             total_scalability_score += factor_score
 
     # Determine primary customer segment
-    primary_segment = max(segment_scores.items(), key=lambda x: x[1])[0] if segment_scores else "unknown"
+    primary_segment = (
+        max(segment_scores.items(), key=lambda x: x[1])[0]
+        if segment_scores
+        else "unknown"
+    )
 
     return {
         "customer_segments": segment_scores,
         "scalability_analysis": scalability_analysis,
         "primary_segment": primary_segment,
         "total_scalability_score": total_scalability_score,
-        "scalability_rating": "high" if total_scalability_score >= 6 else "medium" if total_scalability_score >= 3 else "low",
-        "segment_confidence": max(segment_scores.values()) if segment_scores else 0.0
+        "scalability_rating": "high"
+        if total_scalability_score >= 6
+        else "medium"
+        if total_scalability_score >= 3
+        else "low",
+        "segment_confidence": max(segment_scores.values()) if segment_scores else 0.0,
     }
 
 
@@ -277,7 +460,7 @@ def industry_classification_algorithm(
     startup_description: str,
     business_model: str,
     target_customers: str,
-    current_kpis: dict[str, Any] | None = None
+    current_kpis: dict[str, Any] | None,
 ) -> dict[str, Any]:
     """
     Comprehensive industry classification algorithm with confidence scoring.
@@ -292,7 +475,9 @@ def industry_classification_algorithm(
         Dictionary with complete classification results and confidence scores
     """
     # Get taxonomy matching results
-    taxonomy_results = industry_taxonomy_matching_tool(startup_description, business_model)
+    taxonomy_results = industry_taxonomy_matching_tool(
+        startup_description, business_model
+    )
 
     # Get business model analysis
     business_analysis = business_model_analysis_tool(business_model, target_customers)
@@ -306,8 +491,12 @@ def industry_classification_algorithm(
     confidence_factors = {
         "taxonomy_strength": taxonomy_results.get("classification_strength", 0.0),
         "business_model_clarity": business_analysis.get("segment_confidence", 0.0),
-        "scalability_indicators": min(business_analysis.get("total_scalability_score", 0) / 10, 1.0),
-        "kpi_alignment": kpi_indicators.get("alignment_score", 0.0) if kpi_indicators else 0.0
+        "scalability_indicators": min(
+            business_analysis.get("total_scalability_score", 0) / 10, 1.0
+        ),
+        "kpi_alignment": kpi_indicators.get("alignment_score", 0.0)
+        if kpi_indicators
+        else 0.0,
     }
 
     # Weighted confidence calculation
@@ -315,20 +504,23 @@ def industry_classification_algorithm(
         "taxonomy_strength": 0.4,
         "business_model_clarity": 0.3,
         "scalability_indicators": 0.2,
-        "kpi_alignment": 0.1
+        "kpi_alignment": 0.1,
     }
 
     overall_confidence = sum(
-        confidence_factors[factor] * weights[factor]
-        for factor in confidence_factors
+        confidence_factors[factor] * weights[factor] for factor in confidence_factors
     )
 
     # Determine primary and secondary industries
     industry_scores = taxonomy_results.get("industry_scores", {})
-    sorted_industries = sorted(industry_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_industries = sorted(
+        industry_scores.items(), key=lambda x: x[1], reverse=True
+    )
 
     primary_industry = sorted_industries[0][0] if sorted_industries else "unknown"
-    secondary_industries = [industry for industry, score in sorted_industries[1:3] if score > 0.3]
+    secondary_industries = [
+        industry for industry, score in sorted_industries[1:3] if score > 0.3
+    ]
 
     # Generate industry code (simplified NAICS-like)
     industry_codes = {
@@ -339,7 +531,7 @@ def industry_classification_algorithm(
         "marketplace": "425110",
         "consumer": "713290",
         "enterprise": "541611",
-        "hardware": "334111"
+        "hardware": "334111",
     }
 
     return {
@@ -354,16 +546,28 @@ def industry_classification_algorithm(
         "key_indicators": extract_key_indicators(taxonomy_results, business_analysis),
         "recommended_kpi_frameworks": get_recommended_kpi_frameworks(primary_industry),
         "industry_characteristics": {
-            "revenue_model": taxonomy_results.get("top_revenue_model", ["unknown", 0])[0] if taxonomy_results.get("top_revenue_model") else "unknown",
+            "revenue_model": taxonomy_results.get("top_revenue_model", ["unknown", 0])[
+                0
+            ]
+            if taxonomy_results.get("top_revenue_model")
+            else "unknown",
             "customer_segment": business_analysis.get("primary_segment", "unknown"),
-            "delivery_mechanism": determine_delivery_mechanism(startup_description, business_model),
-            "scalability_factors": list(business_analysis.get("scalability_analysis", {}).keys())
+            "delivery_mechanism": determine_delivery_mechanism(
+                startup_description, business_model
+            ),
+            "scalability_factors": list(
+                business_analysis.get("scalability_analysis", {}).keys()
+            ),
         },
         "confidence_factors": {
-            "supporting_evidence": generate_supporting_evidence(taxonomy_results, business_analysis),
+            "supporting_evidence": generate_supporting_evidence(
+                taxonomy_results, business_analysis
+            ),
             "uncertainty_factors": identify_uncertainty_factors(confidence_factors),
-            "additional_info_needed": suggest_additional_info(overall_confidence, confidence_factors)
-        }
+            "additional_info_needed": suggest_additional_info(
+                overall_confidence, confidence_factors
+            ),
+        },
     }
 
 
@@ -371,13 +575,45 @@ def analyze_kpi_indicators(current_kpis: dict[str, Any]) -> dict[str, Any]:
     """Analyze KPI data to infer industry alignment."""
     kpi_industry_mapping = {
         "saas": ["arr", "mrr", "churn_rate", "cac", "ltv", "nps"],
-        "ecommerce": ["gmv", "conversion_rate", "aov", "cart_abandonment", "inventory_turnover"],
-        "fintech": ["transaction_volume", "aum", "loan_origination", "compliance_score"],
-        "healthcare": ["patient_outcomes", "clinical_trials", "regulatory_approvals", "r_and_d_spend"],
+        "ecommerce": [
+            "gmv",
+            "conversion_rate",
+            "aov",
+            "cart_abandonment",
+            "inventory_turnover",
+        ],
+        "fintech": [
+            "transaction_volume",
+            "aum",
+            "loan_origination",
+            "compliance_score",
+        ],
+        "healthcare": [
+            "patient_outcomes",
+            "clinical_trials",
+            "regulatory_approvals",
+            "r_and_d_spend",
+        ],
         "marketplace": ["gmv", "take_rate", "network_effects", "user_engagement"],
-        "consumer": ["dau", "mau", "engagement_rate", "viral_coefficient", "retention_rate"],
-        "enterprise": ["revenue_per_client", "client_retention", "utilization_rate", "project_margin"],
-        "hardware": ["unit_sales", "manufacturing_cost", "inventory_turnover", "product_margin"]
+        "consumer": [
+            "dau",
+            "mau",
+            "engagement_rate",
+            "viral_coefficient",
+            "retention_rate",
+        ],
+        "enterprise": [
+            "revenue_per_client",
+            "client_retention",
+            "utilization_rate",
+            "project_margin",
+        ],
+        "hardware": [
+            "unit_sales",
+            "manufacturing_cost",
+            "inventory_turnover",
+            "product_margin",
+        ],
     }
 
     kpi_keys = [key.lower().replace(" ", "_") for key in current_kpis]
@@ -388,16 +624,22 @@ def analyze_kpi_indicators(current_kpis: dict[str, Any]) -> dict[str, Any]:
         if matches > 0:
             industry_alignment[industry] = matches / len(expected_kpis)
 
-    best_alignment = max(industry_alignment.items(), key=lambda x: x[1]) if industry_alignment else ("unknown", 0.0)
+    best_alignment = (
+        max(industry_alignment.items(), key=lambda x: x[1])
+        if industry_alignment
+        else ("unknown", 0.0)
+    )
 
     return {
         "industry_alignment": industry_alignment,
         "best_match": best_alignment[0],
-        "alignment_score": best_alignment[1]
+        "alignment_score": best_alignment[1],
     }
 
 
-def generate_classification_rationale(taxonomy_results, business_analysis, confidence_factors):
+def generate_classification_rationale(
+    taxonomy_results, business_analysis, confidence_factors
+):
     """Generate human-readable rationale for classification."""
     rationale_parts = []
 
@@ -413,7 +655,11 @@ def generate_classification_rationale(taxonomy_results, business_analysis, confi
     if scalability_rating != "unknown":
         rationale_parts.append(f"{scalability_rating} scalability potential")
 
-    return "; ".join(rationale_parts) if rationale_parts else "Limited classification indicators available"
+    return (
+        "; ".join(rationale_parts)
+        if rationale_parts
+        else "Limited classification indicators available"
+    )
 
 
 def extract_key_indicators(taxonomy_results, business_analysis):
@@ -439,14 +685,46 @@ def extract_key_indicators(taxonomy_results, business_analysis):
 def get_recommended_kpi_frameworks(industry):
     """Get recommended KPI frameworks for the classified industry."""
     frameworks = {
-        "saas": ["SaaS Metrics Framework", "Recurring Revenue Framework", "Customer Success Framework"],
-        "ecommerce": ["E-commerce Performance Framework", "Retail Analytics Framework", "Customer Journey Framework"],
-        "fintech": ["Financial Services Framework", "Regulatory Compliance Framework", "Risk Management Framework"],
-        "healthcare": ["Healthcare Outcomes Framework", "Clinical Development Framework", "Regulatory Milestone Framework"],
-        "marketplace": ["Platform Economics Framework", "Network Effects Framework", "Multi-sided Market Framework"],
-        "consumer": ["Consumer Engagement Framework", "Mobile App Framework", "Viral Growth Framework"],
-        "enterprise": ["B2B Services Framework", "Client Success Framework", "Professional Services Framework"],
-        "hardware": ["Product Development Framework", "Manufacturing Efficiency Framework", "Hardware Sales Framework"]
+        "saas": [
+            "SaaS Metrics Framework",
+            "Recurring Revenue Framework",
+            "Customer Success Framework",
+        ],
+        "ecommerce": [
+            "E-commerce Performance Framework",
+            "Retail Analytics Framework",
+            "Customer Journey Framework",
+        ],
+        "fintech": [
+            "Financial Services Framework",
+            "Regulatory Compliance Framework",
+            "Risk Management Framework",
+        ],
+        "healthcare": [
+            "Healthcare Outcomes Framework",
+            "Clinical Development Framework",
+            "Regulatory Milestone Framework",
+        ],
+        "marketplace": [
+            "Platform Economics Framework",
+            "Network Effects Framework",
+            "Multi-sided Market Framework",
+        ],
+        "consumer": [
+            "Consumer Engagement Framework",
+            "Mobile App Framework",
+            "Viral Growth Framework",
+        ],
+        "enterprise": [
+            "B2B Services Framework",
+            "Client Success Framework",
+            "Professional Services Framework",
+        ],
+        "hardware": [
+            "Product Development Framework",
+            "Manufacturing Efficiency Framework",
+            "Hardware Sales Framework",
+        ],
     }
 
     return frameworks.get(industry, ["Generic Business Framework"])
@@ -458,9 +736,14 @@ def determine_delivery_mechanism(startup_description, business_model):
 
     if any(term in text for term in ["cloud", "saas", "online", "digital", "software"]):
         return "digital"
-    elif any(term in text for term in ["physical", "product", "hardware", "device", "manufacturing"]):
+    elif any(
+        term in text
+        for term in ["physical", "product", "hardware", "device", "manufacturing"]
+    ):
         return "physical"
-    elif any(term in text for term in ["service", "consulting", "professional", "human"]):
+    elif any(
+        term in text for term in ["service", "consulting", "professional", "human"]
+    ):
         return "service"
     else:
         return "hybrid"
@@ -471,12 +754,31 @@ def generate_supporting_evidence(taxonomy_results, business_analysis):
     evidence = []
 
     if taxonomy_results.get("industry_scores"):
-        top_industries = sorted(taxonomy_results["industry_scores"].items(), key=lambda x: x[1], reverse=True)[:2]
-        evidence.extend([f"{industry} indicators present" for industry, score in top_industries if score > 0.3])
+        top_industries = sorted(
+            taxonomy_results["industry_scores"].items(),
+            key=lambda x: x[1],
+            reverse=True,
+        )[:2]
+        evidence.extend(
+            [
+                f"{industry} indicators present"
+                for industry, score in top_industries
+                if score > 0.3
+            ]
+        )
 
     if business_analysis.get("scalability_analysis"):
-        scalability_factors = [factor for factor, data in business_analysis["scalability_analysis"].items() if data["presence"]]
-        evidence.extend([f"{factor.replace('_', ' ')} identified" for factor in scalability_factors[:2]])
+        scalability_factors = [
+            factor
+            for factor, data in business_analysis["scalability_analysis"].items()
+            if data["presence"]
+        ]
+        evidence.extend(
+            [
+                f"{factor.replace('_', ' ')} identified"
+                for factor in scalability_factors[:2]
+            ]
+        )
 
     return evidence
 
@@ -514,6 +816,37 @@ def suggest_additional_info(overall_confidence, confidence_factors):
     return suggestions
 
 
+def industry_classification_after_callback(
+    callback_context: CallbackContext, llm_response: LlmResponse | None = None, **kwargs
+):
+    """After callback for industry classifier agent to save LLM response and state."""
+    try:
+        if llm_response and llm_response.content and llm_response.content.parts:
+            save_llm_response_to_file(
+                filename="ic_llm",
+                llm_content=llm_response.content,
+                session_path=get_session_dir(callback_context),
+                file_type="json",
+            )
+    except Exception as e:
+        logger.error(
+            f"❌ Error saving LLM response in industry_classification_after_callback: {e}"
+        )
+
+    try:
+        if callback_context.state:
+            save_state_to_file(
+                context=callback_context,
+                session_path=get_session_dir(callback_context),
+                filename="ic_state",
+                file_type="json",
+            )
+    except Exception as e:
+        logger.error(
+            f"❌ Error saving state in industry_classification_after_callback: {e}"
+        )
+
+
 def industry_classification_validation_callback(callback_context, **kwargs):
     """Callback to validate industry classification completeness."""
     logger.info(
@@ -538,10 +871,11 @@ industry_classifier_agent = Agent(
     tools=[
         industry_taxonomy_matching_tool,
         business_model_analysis_tool,
-        industry_classification_algorithm
+        industry_classification_algorithm,
     ],
     before_agent_callback=industry_classification_setup_callback,
     after_model_callback=industry_classification_validation_callback,
+    after_agent_callback=industry_classification_after_callback,
     generate_content_config=types.GenerateContentConfig(
         temperature=config.TEMPERATURE,
     ),

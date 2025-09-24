@@ -11,7 +11,7 @@ from google.adk.agents import Agent, ParallelAgent, SequentialAgent
 from google.adk.models import LlmResponse
 
 from utils.configs import config
-from utils.helper import get_session_dir, save_llm_response_to_file
+from utils.helper import get_session_dir, save_llm_response_to_file, save_state_to_file
 
 from . import prompt
 
@@ -367,7 +367,9 @@ def analysis_benchmarking_pipeline_callback(callback_context, **kwargs):
     ctx_set(callback_context, "analysis_benchmarking_pipeline_state", pipeline_state)
 
 
-def kpi_report_synthesis_callback(callback_context, llm_response: LlmResponse | None = None, **kwargs):
+def kpi_report_synthesis_callback(
+    callback_context, llm_response: LlmResponse | None = None, **kwargs
+):
     """Callback to synthesize KPI analysis results from all agents."""
     logger.info(
         "\n🤖 kpi_report_synthesizer: Synthesizing KPI analysis results from all agents\n"
@@ -394,11 +396,13 @@ def kpi_report_synthesis_callback(callback_context, llm_response: LlmResponse | 
     # Save the response to markdown file
     try:
         if not llm_response:
-            logger.warning("⚠️ kpi_report_synthesis_callback called without an LlmResponse; skipping save.")
+            logger.warning(
+                "⚠️ kpi_report_synthesis_callback called without an LlmResponse; skipping save."
+            )
             return
         if llm_response.content and llm_response.content.parts:
             save_llm_response_to_file(
-                filename="business_kpi_report_synthesis",
+                filename="bkpi_llm",
                 llm_content=llm_response.content,
                 session_path=get_session_dir(callback_context),
                 file_type="md",
@@ -407,6 +411,25 @@ def kpi_report_synthesis_callback(callback_context, llm_response: LlmResponse | 
             logger.warning("⚠️ No content in LlmResponse to save in synthesis_callback.")
     except Exception as e:
         logger.error(f"❌ Error saving LLM response in synthesis_callback: {e}")
+
+    # Save state to file
+    try:
+        if callback_context.state:
+            save_state_to_file(
+                context=callback_context,
+                session_path=get_session_dir(callback_context),
+                filename="bkpi_state",
+                file_type="json",
+            )
+    except Exception as e:
+        logger.error(f"❌ Error saving state in synthesis_callback: {e}")
+
+    # Set the synthesized KPI report in callback context for parent agent access
+    callback_context.synthesized_kpi_report = {
+        "status": "completed",
+        "session_path": get_session_dir(callback_context),
+        "files_saved": ["bkpi_llm.md", "bkpi_state.json"],
+    }
 
 
 from agents.industry_benchmarking.agent import industry_benchmarking_agent

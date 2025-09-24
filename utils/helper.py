@@ -224,12 +224,12 @@ def save_state_to_file(
 
 
 # save llm_response to file
-def save_llm_response_to_file(filename, llm_content, session_path: str, file_type="json"):
+def save_llm_response_to_file(
+    filename, llm_content, session_path: str, file_type="json"
+):
     """Save LlmResponse from a tool execution to a JSON file."""
     if not llm_content.parts[0].text:
         logger.warning("No LlmResponse content to save.")
         return
 
-    save_to_file(
-        filename, llm_content.parts[0].text, session_path, file_type=file_type
-    )
+    save_to_file(filename, llm_content.parts[0].text, session_path, file_type=file_type)

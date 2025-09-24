@@ -1,0 +1,39 @@
+services:
+  api:
+    container_name: se-system-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - sessions:/app/sessions
+      - uploaded:/app/uploaded
+    env_file:
+      - .env
+    networks:
+      - startup-eval
+
+  ui:
+    container_name: se-system-ui
+    build:
+      context: ui
+    ports:
+      - "3000:3000"
+    volumes:
+      - sessions:/app/sessions
+      - uploaded:/app/uploaded
+    environment:
+      - BACKEND_URL=http://api:8000
+    depends_on:
+      - api
+    networks:
+      - startup-eval
+
+volumes:
+  sessions:
+  uploaded:
+
+networks:
+  startup-eval:
+    driver: bridge
