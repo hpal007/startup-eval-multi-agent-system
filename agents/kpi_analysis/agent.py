@@ -21,7 +21,6 @@ from tools.market_research_tools import (
     kpi_validation_search,
 )
 from tools.search_tool import concise_google_search, search_indian_news
-
 from utils.configs import config
 from utils.helper import get_session_dir, save_llm_response_to_file, save_state_to_file
 

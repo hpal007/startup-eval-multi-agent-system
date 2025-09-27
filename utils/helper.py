@@ -3,6 +3,7 @@ from pathlib import Path
 
 import google.genai.types as types
 from google.adk.agents.callback_context import CallbackContext
+from google.adk.models import LlmResponse
 from google.adk.tools.tool_context import ToolContext
 
 from utils.logging_config import get_logger
@@ -233,3 +234,25 @@ def save_llm_response_to_file(
         return
 
     save_to_file(filename, llm_content.parts[0].text, session_path, file_type=file_type)
+
+
+def data_consolidation_after_model_callback(
+    filename: str, callback_context: CallbackContext, llm_response: LlmResponse
+):
+    # Save LlmResponse content and state to files
+    if llm_response.content and llm_response.content.parts:
+        save_llm_response_to_file(
+            filename=filename,
+            llm_content=llm_response.content,
+            session_path=get_session_dir(callback_context),
+            file_type="json",
+        )
+
+    elif llm_response.error_message:
+        print(
+            f"[Callback] Inspected response: Contains error '{llm_response.error_message}'. No modification."
+        )
+        return None
+    else:
+        print("[Callback] Inspected response: Empty LlmResponse.")
+        return None  # Nothing to modify

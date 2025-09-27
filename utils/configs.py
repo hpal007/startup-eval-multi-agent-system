@@ -3,6 +3,7 @@ import os
 from typing import Any
 
 from dotenv import load_dotenv
+from google.adk.models.lite_llm import LiteLlm
 
 # Load environment variables from .env file
 load_dotenv()
@@ -13,9 +14,13 @@ logger = logging.getLogger(__name__)
 class Config:
     """Configuration class to manage environment variables for agents."""
 
+    OLLAMA = True
     # Gemini/LLM Model configurations
     GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
     GEMINI_API_KEY: str | None = os.getenv("GEMINI_API_KEY")
+
+    OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+    OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "ollama/gemma3:latest")
 
     # Other model configurations
     OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-4")
@@ -44,6 +49,13 @@ class Config:
             Model name to use for the agent
         """
         env_var = f"{agent_name.upper()}_MODEL"
+        if "OLLAMA" in env_var:
+
+            MODEL = LiteLlm(
+                model=f"ollama/{os.getenv('OLLAMA_MODEL', 'gemma3:latest')}",
+                api_base=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
+            )
+            return MODEL
         return os.getenv(env_var, cls.GEMINI_MODEL)
 
     @classmethod

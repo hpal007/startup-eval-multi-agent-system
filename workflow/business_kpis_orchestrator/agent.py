@@ -5,17 +5,22 @@ This is the root agent that coordinates the multi-agent business KPI validation 
 It orchestrates industry classification, market size validation, KPI analysis, and benchmarking.
 """
 
-import logging
-
 from google.adk.agents import Agent, ParallelAgent, SequentialAgent
 from google.adk.models import LlmResponse
 
 from utils.configs import config
 from utils.helper import get_session_dir, save_llm_response_to_file, save_state_to_file
+from utils.logging_config import getLogger, log_callback_event
 
-from . import prompt
+from agents.industry_benchmarking.agent import industry_benchmarking_agent
+from agents.industry_classifier.agent import industry_classifier_agent
+from agents.kpi_analysis.agent import kpi_analysis_agent
+from agents.kpi_framework_selector.agent import kpi_framework_selector_agent
+from agents.market_size_validator.agent import market_size_validator_agent
+from agents.report_synthesis.agent import report_synthesis_agent
 
-logger = logging.getLogger(__name__)
+
+logger = getLogger(__name__)
 MODEL = config.get_model_for_agent("abc_agent")
 
 
@@ -323,32 +328,6 @@ def handle_parallel_processing_failure(callback_context, failed_agents):
     return applied_fallbacks
 
 
-def setup_business_kpis_orchestrator_callback(callback_context, **kwargs):
-    """Setup callback for the business KPIs orchestrator agent."""
-    logger.info(
-        "\n👑 Business KPIs Orchestrator: 🚀 Starting business KPI validation and analysis workflow\n"
-    )
-    # Initialize any global state needed
-
-
-def market_validation_pipeline_callback(callback_context, **kwargs):
-    """Callback for market validation pipeline progress."""
-    logger.info(
-        "\n🔄 market_validation_pipeline: Market validation pipeline initiated - running sequential classification and validation\n"
-    )
-
-    # Initialize pipeline state tracking
-    pipeline_state = {
-        "industry_classification_complete": False,
-        "market_validation_complete": False,
-        "kpi_framework_selection_complete": False,
-        "pipeline_start_time": ctx_get(callback_context, "timestamp"),
-        "retry_count": 0,
-    }
-
-    ctx_set(callback_context, "market_validation_pipeline_state", pipeline_state)
-
-
 def analysis_benchmarking_pipeline_callback(callback_context, **kwargs):
     """Callback for analysis and benchmarking pipeline progress."""
     logger.info(
@@ -432,14 +411,6 @@ def kpi_report_synthesis_callback(
     }
 
 
-from agents.industry_benchmarking.agent import industry_benchmarking_agent
-from agents.industry_classifier.agent import industry_classifier_agent
-from agents.kpi_analysis.agent import kpi_analysis_agent
-from agents.kpi_framework_selector.agent import kpi_framework_selector_agent
-from agents.market_size_validator.agent import market_size_validator_agent
-from agents.report_synthesis.agent import report_synthesis_agent
-
-
 # Persisting callbacks to store each stage result into context
 def _store_industry_classification(callback_context, **kwargs):
     # Store a minimal completion stub if detailed parsing is unavailable
@@ -507,8 +478,6 @@ def _store_kpi_analysis(callback_context, **kwargs):
         )
 
 
-# Market Validation Pipeline (Sequential)
-# Wrap base agents with after_model_callback to persist results
 def create_industry_classifier_agent_with_callback():
     """Create a fresh instance of the industry classifier agent with callback."""
     return Agent(
@@ -521,11 +490,6 @@ def create_industry_classifier_agent_with_callback():
         generate_content_config=industry_classifier_agent.generate_content_config,
         include_contents=industry_classifier_agent.include_contents,
     )
-
-
-industry_classifier_agent_with_callback = (
-    create_industry_classifier_agent_with_callback()
-)
 
 
 def create_market_size_validator_agent_with_callback():
@@ -541,12 +505,6 @@ def create_market_size_validator_agent_with_callback():
         include_contents=market_size_validator_agent.include_contents,
     )
 
-
-market_size_validator_agent_with_callback = (
-    create_market_size_validator_agent_with_callback()
-)
-
-
 def create_kpi_framework_selector_agent_with_callback():
     """Create a fresh instance of the KPI framework selector agent with callback."""
     return Agent(
@@ -560,29 +518,6 @@ def create_kpi_framework_selector_agent_with_callback():
         generate_content_config=kpi_framework_selector_agent.generate_content_config,
         include_contents=kpi_framework_selector_agent.include_contents,
     )
-
-
-kpi_framework_selector_agent_with_callback = (
-    create_kpi_framework_selector_agent_with_callback()
-)
-
-
-def create_market_validation_pipeline():
-    """Create a fresh instance of the market validation pipeline."""
-    return SequentialAgent(
-        name="market_validation_pipeline",
-        description="Sequential execution of industry classification, market validation, and KPI framework selection",
-        sub_agents=[
-            create_industry_classifier_agent_with_callback(),
-            create_market_size_validator_agent_with_callback(),
-            create_kpi_framework_selector_agent_with_callback(),
-        ],
-        before_agent_callback=market_validation_pipeline_callback,
-    )
-
-
-market_validation_pipeline = create_market_validation_pipeline()
-
 
 # Analysis & Benchmarking Pipeline (Parallel)
 def create_industry_benchmarking_agent_with_callback():
@@ -599,11 +534,6 @@ def create_industry_benchmarking_agent_with_callback():
     )
 
 
-industry_benchmarking_agent_with_callback = (
-    create_industry_benchmarking_agent_with_callback()
-)
-
-
 def create_kpi_analysis_agent_with_callback():
     """Create a fresh instance of the KPI analysis agent with callback."""
     return Agent(
@@ -616,9 +546,6 @@ def create_kpi_analysis_agent_with_callback():
         generate_content_config=kpi_analysis_agent.generate_content_config,
         include_contents=kpi_analysis_agent.include_contents,
     )
-
-
-kpi_analysis_agent_with_callback = create_kpi_analysis_agent_with_callback()
 
 
 def create_analysis_benchmarking_pipeline():
@@ -635,9 +562,6 @@ def create_analysis_benchmarking_pipeline():
     )
 
 
-analysis_benchmarking_pipeline = create_analysis_benchmarking_pipeline()
-
-
 def create_report_synthesis_agent_with_callback():
     """Create a fresh instance of the report synthesis agent with callback."""
     return Agent(
@@ -652,50 +576,29 @@ def create_report_synthesis_agent_with_callback():
     )
 
 
-# Use the implemented report synthesis agent with callback
-report_synthesis_agent_with_callback = create_report_synthesis_agent_with_callback()
-
-
-def create_business_kpi_analysis_pipeline():
-    """Create a fresh instance of the business KPI analysis pipeline."""
+def create_business_kpis_orchestrator():
+    """Create a fresh instance of the business KPIs orchestrator agent."""
     return SequentialAgent(
         name="business_kpi_analysis_pipeline",
         description="Sequential execution of market validation, analysis & benchmarking, and report synthesis",
         sub_agents=[
-            create_market_validation_pipeline(),
+            create_industry_classifier_agent_with_callback(),
+            create_market_size_validator_agent_with_callback(),
+            create_kpi_framework_selector_agent_with_callback(),
             create_analysis_benchmarking_pipeline(),
             create_report_synthesis_agent_with_callback(),
         ],
     )
 
 
-# Main Business KPI Analysis Pipeline
-business_kpi_analysis_pipeline = create_business_kpi_analysis_pipeline()
-
-
-def create_business_kpis_orchestrator():
-    """Create a fresh instance of the business KPIs orchestrator agent."""
-    return Agent(
-        model=MODEL,
-        name="business_kpis_orchestrator",
-        description=(
-            "Main orchestrator for business KPI validation and analysis. "
-            "Coordinates industry classification, market size validation, KPI benchmarking, and comprehensive reporting."
-        ),
-        instruction=prompt.BUSINESS_KPIS_ORCHESTRATOR_INSTRUCTION,
-        # planner=PlanReActPlanner(),
-        sub_agents=[create_business_kpi_analysis_pipeline()],
-        before_agent_callback=setup_business_kpis_orchestrator_callback,
-        output_key="synthesized_kpi_report",
-        # generate_content_config=types.GenerateContentConfig(
-        #     temperature=config.TEMPERATURE,
-        # ),
-        include_contents="default",
-    )
-
-
-# Root Business KPIs Orchestrator Agent
 root_agent = create_business_kpis_orchestrator()
-
-# Keep the original name for backward compatibility
 business_kpis_orchestrator_agent = root_agent
+analysis_benchmarking_pipeline = create_analysis_benchmarking_pipeline()
+industry_classifier_agent_with_callback = create_industry_classifier_agent_with_callback()
+report_synthesis_agent_with_callback = create_report_synthesis_agent_with_callback()
+industry_benchmarking_agent_with_callback = create_industry_benchmarking_agent_with_callback()
+kpi_analysis_agent_with_callback = create_kpi_analysis_agent_with_callback()
+kpi_framework_selector_agent_with_callback = create_kpi_framework_selector_agent_with_callback()
+market_size_validator_agent_with_callback = (
+    create_market_size_validator_agent_with_callback()
+)

@@ -9,10 +9,10 @@ import json
 import logging
 
 from google.adk.agents import Agent
-from google.adk.agents.callback_context import CallbackContext
-from google.adk.models import LlmResponse
 from google.adk.tools import FunctionTool
 from google.adk.tools.tool_context import ToolContext
+from google.adk.agents.callback_context import CallbackContext
+from google.adk.models import LlmResponse
 
 from tools.file_tool import upload_tool
 from tools.pdf_tool import process_pdf_with_llm
@@ -20,16 +20,14 @@ from utils import save_to_state
 from utils.configs import config
 from utils.helper import (
     check_uploaded_pdf,
-    get_session_dir,
-    save_llm_response_to_file,
-    save_state_to_file,
+    data_consolidation_after_model_callback,
 )
 from utils.logging_config import log_callback_event
 
 from . import prompt
 
 logger = logging.getLogger(__name__)
-MODEL = config.get_model_for_agent("abc_agent")
+MODEL = config.get_model_for_agent("abc")
 
 
 async def data_consolidation_setup_callback(callback_context, **_kwargs):
@@ -59,37 +57,6 @@ async def data_consolidation_setup_callback(callback_context, **_kwargs):
             pass
 
     log_callback_event(event_type="starting", agent_name="pdf_processor_agent")
-
-
-def data_consolidation_after_callback(
-    callback_context: CallbackContext, llm_response: LlmResponse
-):
-    log_callback_event(event_type="completed", agent_name="data_consolidation_agent")
-    # Save LlmResponse content and state to files
-    if llm_response.content and llm_response.content.parts:
-        save_llm_response_to_file(
-            filename="pdf_llm",
-            llm_content=llm_response.content,
-            session_path=get_session_dir(callback_context),
-            file_type="json",
-        )
-
-    if callback_context.state:
-        save_state_to_file(
-            context=callback_context,
-            session_path=get_session_dir(callback_context),
-            filename="pdf_state",
-            file_type="json",
-        )
-
-    elif llm_response.error_message:
-        print(
-            f"[Callback] Inspected response: Contains error '{llm_response.error_message}'. No modification."
-        )
-        return None
-    else:
-        print("[Callback] Inspected response: Empty LlmResponse.")
-        return None  # Nothing to modify
 
 
 async def process_pdf_tool(tool_context: ToolContext) -> str:
@@ -160,6 +127,12 @@ async def process_pdf_tool(tool_context: ToolContext) -> str:
         return json.dumps({"error": f"Unexpected error: {e!s}"})
 
 
+def after_model_callback_pdf_processor(callback_context: CallbackContext, llm_response: LlmResponse):
+    log_callback_event("pdf-processor", "end", "agent")
+    data_consolidation_after_model_callback("founder_pdf_processing", callback_context, llm_response)
+
+
+
 def create_pdf_processor_agent():
     """Create a fresh instance of the PDF processor agent."""
     return Agent(
@@ -174,9 +147,9 @@ def create_pdf_processor_agent():
         instruction=prompt.PDF_PROCESSOR_INSTRUCTION,
         tools=[FunctionTool(process_pdf_tool)],
         before_agent_callback=data_consolidation_setup_callback,
-        after_model_callback=data_consolidation_after_callback,
+        after_model_callback=after_model_callback_pdf_processor,
         include_contents="default",
-        output_key="pdf_processor_agent_output",
+        output_key="processed_pdf_data",
     )
 
 

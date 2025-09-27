@@ -11,7 +11,6 @@ This script tests the founder profile orchestrator individually to verify:
 import asyncio
 import json
 import logging
-import os
 import sys
 import uuid
 from pathlib import Path
@@ -19,41 +18,47 @@ from pathlib import Path
 # Add the project root to Python path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from google.adk.sessions import InMemorySessionService
 from google.adk.artifacts import InMemoryArtifactService
 from google.adk.runners import Runner
+from google.adk.sessions import InMemorySessionService
 from google.genai import types
 from google.genai.types import Content
 
+
 def create_test_founder_profile_orchestrator():
     """Create a test version of the founder profile orchestrator with embedded mock data."""
-    from workflow.founder_profile_orchestrator.agent import create_founder_profile_orchestrator
     from workflow.founder_profile_orchestrator import prompt
-    
+    from workflow.founder_profile_orchestrator.agent import (
+        create_founder_profile_orchestrator,
+    )
+
     # Create mock PDF processor output
     mock_pdf_output = create_mock_pdf_processor_output()
-    
+
     # Modify the query generator instruction to embed the mock data
     modified_query_instruction = prompt.QUERY_GENERATOR_INSTRUCTION.replace(
-        "{pdf_processor_agent_output}", 
-        json.dumps(mock_pdf_output, indent=2)
+        "{pdf_processor_agent_output}", json.dumps(mock_pdf_output, indent=2)
     )
-    
+
     # Create the orchestrator
     orchestrator = create_founder_profile_orchestrator()
-    
+
     # Modify the sub-agent's instruction
-    if hasattr(orchestrator, 'sub_agents') and orchestrator.sub_agents:
+    if hasattr(orchestrator, "sub_agents") and orchestrator.sub_agents:
         for sub_agent in orchestrator.sub_agents:
-            if hasattr(sub_agent, 'sub_agents'):
+            if hasattr(sub_agent, "sub_agents"):
                 for inner_agent in sub_agent.sub_agents:
-                    if hasattr(inner_agent, 'name') and inner_agent.name == 'query_generator':
+                    if (
+                        hasattr(inner_agent, "name")
+                        and inner_agent.name == "query_generator"
+                    ):
                         # Replace the instruction
                         inner_agent.instruction = modified_query_instruction
                         break
-    
+
     return orchestrator
-from utils.configs import config
+
+
 from utils.logging_config import setup_logging
 
 # Setup logging
@@ -69,7 +74,7 @@ def create_mock_pdf_processor_output():
             "description": "AI-powered SaaS platform for automated customer support",
             "industry": "SaaS",
             "stage": "Series A",
-            "location": "San Francisco, CA"
+            "location": "San Francisco, CA",
         },
         "team": {
             "founders": [
@@ -79,7 +84,7 @@ def create_mock_pdf_processor_output():
                     "bio": "Former VP of Engineering at Google with 10+ years in enterprise software. IIT Delhi graduate with expertise in AI/ML.",
                     "linkedin": "https://linkedin.com/in/janedoe",
                     "education": "IIT Delhi, B.Tech Computer Science",
-                    "experience": "Google (VP Engineering), Microsoft (Senior PM), Startup X (CTO)"
+                    "experience": "Google (VP Engineering), Microsoft (Senior PM), Startup X (CTO)",
                 },
                 {
                     "name": "John Smith",
@@ -87,15 +92,15 @@ def create_mock_pdf_processor_output():
                     "bio": "Serial entrepreneur with 3 successful exits. IIM Ahmedabad MBA. Expert in SaaS product development.",
                     "linkedin": "https://linkedin.com/in/johnsmith",
                     "education": "IIM Ahmedabad, MBA",
-                    "experience": "Paytm (Head of Product), Flipkart (Senior Engineer), Own startup (Founder)"
-                }
+                    "experience": "Paytm (Head of Product), Flipkart (Senior Engineer), Own startup (Founder)",
+                },
             ],
             "key_team_members": [
                 {
                     "name": "Alice Johnson",
                     "title": "Head of Sales",
                     "bio": "10+ years in enterprise sales at Salesforce and Oracle",
-                    "linkedin": "https://linkedin.com/in/alicejohnson"
+                    "linkedin": "https://linkedin.com/in/alicejohnson",
                 }
             ],
             "advisors": [
@@ -103,14 +108,14 @@ def create_mock_pdf_processor_output():
                     "name": "Bob Wilson",
                     "title": "Advisor",
                     "bio": "Former CEO of TechCorp, angel investor",
-                    "linkedin": "https://linkedin.com/in/bobwilson"
+                    "linkedin": "https://linkedin.com/in/bobwilson",
                 }
-            ]
+            ],
         },
         "financials": {
             "funding_raised": "$5M Series A",
-            "investors": ["Sequoia Capital", "Andreessen Horowitz"]
-        }
+            "investors": ["Sequoia Capital", "Andreessen Horowitz"],
+        },
     }
 
 
@@ -132,7 +137,7 @@ async def test_founder_profile_orchestrator():
             agent=orchestrator,
             app_name="test-founder-profile",
             session_service=session_service,
-            artifact_service=artifact_service
+            artifact_service=artifact_service,
         )
 
         # Create a test session
@@ -140,9 +145,7 @@ async def test_founder_profile_orchestrator():
         user_id = "test_user"
 
         session = await session_service.create_session(
-            app_name="test-founder-profile",
-            user_id=user_id,
-            session_id=session_id
+            app_name="test-founder-profile", user_id=user_id, session_id=session_id
         )
 
         # Note: Context variables will be provided in the user message instead of session state
@@ -154,7 +157,7 @@ async def test_founder_profile_orchestrator():
 
 Please verify the founder backgrounds, experience, and provide detailed verification results."""
 
-        logger.info(f"📝 Test query: {test_query[:200]}...")        # Execute the agent
+        logger.info(f"📝 Test query: {test_query[:200]}...")  # Execute the agent
         logger.info("⚡ Executing founder profile orchestrator...")
         execution_completed = False
         event_count = 0
@@ -168,16 +171,18 @@ Please verify the founder backgrounds, experience, and provide detailed verifica
             logger.info(f"📊 Event {event_count}: {type(event).__name__}")
 
             # Check if this is a completion event or final event
-            if hasattr(event, 'type') and event.type == 'completion':
+            if hasattr(event, "type") and event.type == "completion":
                 execution_completed = True
                 logger.info("✅ Execution completion event detected")
 
-            if hasattr(event, 'error') and event.error:
+            if hasattr(event, "error") and event.error:
                 logger.error(f"❌ Error event: {event.error}")
                 return False
 
         # Check that execution completed
-        if not execution_completed and event_count > 3:  # Assume completion if many events processed
+        if (
+            not execution_completed and event_count > 3
+        ):  # Assume completion if many events processed
             logger.info("✅ Execution completed (inferred from event count)")
             execution_completed = True
 
@@ -202,7 +207,7 @@ Please verify the founder backgrounds, experience, and provide detailed verifica
             # Check for specific expected files
             expected_files = [
                 "founder_verification_report.md",
-                "founder_verification_report.json"
+                "founder_verification_report.json",
             ]
 
             for expected_file in expected_files:
@@ -251,9 +256,13 @@ Please verify the founder backgrounds, experience, and provide detailed verifica
 
             # Verify that at least some files were saved
             if len(found_files) >= 1:
-                logger.info(f"✅ File saving working correctly - {len(found_files)} files saved")
+                logger.info(
+                    f"✅ File saving working correctly - {len(found_files)} files saved"
+                )
             else:
-                logger.warning(f"⚠️ Only {len(found_files)} files saved, expected at least 1")
+                logger.warning(
+                    f"⚠️ Only {len(found_files)} files saved, expected at least 1"
+                )
 
         else:
             logger.error(f"❌ Session directory not created: {session_dir}")
@@ -272,6 +281,7 @@ Please verify the founder backgrounds, experience, and provide detailed verifica
     except Exception as e:
         logger.error(f"❌ Test failed with exception: {e}")
         import traceback
+
         logger.error(f"📋 Traceback: {traceback.format_exc()}")
         return False
 

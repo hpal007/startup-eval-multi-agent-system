@@ -1,10 +1,14 @@
 import asyncio
+
 from google.adk.artifacts import InMemoryArtifactService
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.genai import types
 
-from workflow.founder_profile_orchestrator.agent import create_founder_profile_orchestrator
+from workflow.founder_profile_orchestrator.agent import (
+    create_founder_profile_orchestrator,
+)
+
 
 async def test_founder_orchestrator():
     """Test the founder profile orchestrator individually."""
@@ -51,6 +55,7 @@ async def test_founder_orchestrator():
             break
 
     print("Founder profile orchestrator execution completed")
+
 
 if __name__ == "__main__":
     asyncio.run(test_founder_orchestrator())

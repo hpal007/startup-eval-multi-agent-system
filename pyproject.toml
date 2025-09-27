@@ -36,6 +36,9 @@ dependencies = [
     "fastapi>=0.104.0",
     "uvicorn[standard]>=0.24.0",
     "python-multipart>=0.0.6",
+    "langchain-ollama>=0.3.8",
+    "langchain-core>=0.3.76",
+    "litellm>=1.77.4",
 ]
 
 [project.optional-dependencies]

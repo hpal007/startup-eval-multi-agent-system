@@ -1,0 +1,130 @@
+{
+    "cover_slide": {
+        "company_name": "Sia",
+        "logo_url": "",
+        "tagline": "Agentic AI for Data Analytics",
+        "contact_information": {
+            "founder_name": "Divya Krishna R, Sumalata Kamat, Karthik. C",
+            "email": "",
+            "phone": "",
+            "website_url": "sianalytics.in"
+        }
+    },
+    "company_purpose": {
+        "description": "The AI Crisis and State of Enterprise AI Adoption. Organizations depend on a centralized data team, making the pipeline fragile.",
+        "validation_data": "90% AI Projects Fail, 76% Decisions made through Spreadsheets, 68% Data is not used and remains in data silos, 500% Increase in volume of data generated over the past decade.",
+        "context": "This is because of High cost of data analytics, Dependency on Manual expertise, Fragmented data pipelines. Diverse types of Data Generated across multiple systems lead to Fragmented Supply chain, Talent Shortage, Unsystematic Processes, Security & Privacy Risks, Inconsistent Datasets, and Brittle Systems"
+    },
+    "solution": {
+        "product_description": "Sia brings a full data team to everyone across the organization through a Simple Chat Interface",
+        "key_features": "Recommender Engine, Pattern discovery, Auto Visualizations, Rapid Deployment, Data quality Reports, No-code model building, Instant Insights, Develop Data Summaries, Build context of Data.",
+        "value_proposition": "Democratization of AI & Data, Context aware insights, Minimized bottlenecks.",
+        "how_it_works": "Sia connects fragmented data systems in businesses to provide various data analytics functionalities.",
+        "demo_link_or_assets": ""
+    },
+    "why_now": {
+        "market_trends": "",
+        "timing_rationale": ""
+    },
+    "market": {
+        "total_addressable_market_TAM": "",
+        "serviceable_available_market_SAM": "",
+        "serviceable_obtainable_market_SOM": "",
+        "customer_personas": "",
+        "customer_pain_points": ""
+    },
+    "product": {
+        "detailed_features": "Recommender Engine, Pattern discovery, Auto Visualizations, Rapid Deployment, Data quality Reports, No-code model building, Instant Insights, Develop Data Summaries, Build context of Data.",
+        "unique_selling_points": "Agentic AI for Data Analytics, Simple Chat Interface, Democratization of AI & Data, Context aware insights, Minimized bottlenecks.",
+        "technology_stack": "",
+        "user_experience_overview": "Accessed through a simple chat interface.",
+        "roadmap_or_milestones": "",
+        "visuals": ""
+    },
+    "business_model": {
+        "revenue_streams": "",
+        "pricing_strategy": "",
+        "customer_lifetime_value": "",
+        "customer_acquisition_cost": "",
+        "repeat_purchase_factors": ""
+    },
+    "traction_and_validation": {
+        "user_growth": "Taking signups and interest from customers (as of 2024, first version deployment).",
+        "revenue_growth": "",
+        "active_users": "",
+        "partnerships": "",
+        "customer_testimonials": "",
+        "press_mentions": ""
+    },
+    "go_to_market": {
+        "marketing_channels": "",
+        "sales_process": "",
+        "partnerships_distributors": "",
+        "growth_strategy": ""
+    },
+    "competition": {
+        "competitors": "",
+        "competitive_analysis": "",
+        "barriers_to_entry": "",
+        "competitive_advantages": ""
+    },
+    "team": {
+        "founders": [
+            {
+                "name": "Divya Krishna R",
+                "title": "Lead Data Scientist (previously at Bosch)",
+                "bio": "Cohesive team, together for over 8 years, First hand experience of the problem, Combining Data & Domain expertise. Graduated with B.E in 2012, SDE at Bosch in 2014, M.E. at Frankfurt university \u2013 Information technology in 2017. Became Lead data scientist at Bosch in 2019, teamed up with Suma to develop data driven applications, and developed multiple solutions together, owning 10 PATENTS combined.",
+                "linkedin": ""
+            },
+            {
+                "name": "Sumalata Kamat",
+                "title": "System Engineer (previously at Bosch)",
+                "bio": "Cohesive team, together for over 8 years, First hand experience of the problem, Combining Data & Domain expertise. Graduated with B.E in 2012 and 2014, System engineer at Bosch in 2017. In 2019, was a Content manager at Byjus and developed multiple solutions with Divya, owning 10 PATENTS combined.",
+                "linkedin": ""
+            },
+            {
+                "name": "Karthik. C",
+                "title": "Founder, Avid Athletes \u2013 Sports-Tech startup (previously Asst manager @ PolyOptics, Germany)",
+                "bio": "Cohesive team, together for over 8 years, First hand experience of the problem, Combining Data & Domain expertise. Graduated with B.E in 2012, SDE at IBM in 2014, Asst manager at PolyOptics, Germany, and Teaching asst at HSRW in 2017. Founded Avid Athletes \u2013 Sports-Tech startup in 2019.",
+                "linkedin": ""
+            }
+        ],
+        "key_team_members": [],
+        "advisors": []
+    },
+    "financials": {
+        "historical_financials": "",
+        "projections": {
+            "next_year": "",
+            "three_year": "",
+            "five_year": ""
+        },
+        "key_metrics": "",
+        "unit_economics": "",
+        "break_even_analysis": "",
+        "funding_history": "",
+        "capitalization_table": ""
+    },
+    "funding": {
+        "amount_seeking": "",
+        "use_of_funds": "",
+        "current_investors": "",
+        "deal_terms": ""
+    },
+    "vision_and_impact": {
+        "future_plans": "First version of the product deployment (2024).",
+        "growth_opportunity": "",
+        "exit_strategy": "",
+        "societal_impact": ""
+    },
+    "appendix": {
+        "additional_charts_or_graphs": "",
+        "market_research_references": "Source for AI Crisis data: Gartner, Prnewswire, IBM Research.",
+        "patents_or_IP": "Divya Krishna R and Sumalata Kamat jointly own 10 PATENTS combined.",
+        "FAQs": ""
+    },
+    "other_information": {
+        "company_building_timeline": "2021: Product Idea development, Market research and idea validation. 2022: POC development & validation, company registration, Multiple project development & implementation. 2023: Full time working on the startup \u2013 Building the product, started hiring teams. 2024: First version of the product deployment, taking signups and interest from customers.",
+        "central_data_team_roles": "Data Scientist, Data Analyst, ML Engineer, Data engineer, Dev Ops Engineer, BI Expert, Cloud Engineer."
+    }
+}

@@ -1,0 +1,139 @@
+```json
+{
+  "cover_slide": {
+    "company_name": "Sia",
+    "logo_url": "",
+    "tagline": "Agentic AI for Data Analytics | Drive value with Data from a conversation",
+    "contact_information": {
+      "founder_name": "",
+      "email": "",
+      "phone": "",
+      "website_url": "sianalytics.in"
+    },
+    "date": ""
+  },
+  "company_purpose": {
+    "mission_statement": "",
+    "vision_statement": "",
+    "one_liner": "Agentic AI for Data Analytics"
+  },
+  "problem": {
+    "description": "The AI Crisis: 90% AI Projects Fail, 76% Decisions made through Spreadsheets, 68% Data is not used and remains in data silos, 500% Increase in volume of data generated over the past decade.",
+    "validation_data": "Source: Gartner, Prnewswire, IBM Research",
+    "context": "This is because of high cost of data analytics, dependency on manual expertise, and fragmented data pipelines. Organizations depend on a centralized data team, making the pipeline fragile, leading to: Fragmented Supply chain, Talent Shortage, Unsystematic Processes, Security & Privacy Risks, Inconsistent Datasets, Brittle Systems."
+  },
+  "solution": {
+    "product_description": "Sia brings a full data team to everyone across the organization through a Simple Chat Interface to address fragmented data systems in businesses.",
+    "key_features": "Recommender Engine, Pattern discovery, Auto Visualizations, Rapid Deployment, Data quality Reports, No-code model building, Instant Insights, Develop Data Summaries, Build context of Data.",
+    "value_proposition": "Democratization of AI & Data, Context aware insights, Minimized bottlenecks.",
+    "how_it_works": "Sia acts as a bridge between fragmented data systems and various data functionalities through a chat interface.",
+    "demo_link_or_assets": ""
+  },
+  "why_now": {
+    "market_trends": "",
+    "timing_rationale": ""
+  },
+  "market": {
+    "total_addressable_market_TAM": "",
+    "serviceable_available_market_SAM": "",
+    "serviceable_obtainable_market_SOM": "",
+    "customer_personas": "",
+    "customer_pain_points": "High cost of data analytics, dependency on manual expertise, fragmented data pipelines, inability to use data efficiently due to silos, and the fragility of centralized data teams."
+  },
+  "product": {
+    "detailed_features": "Sia provides a Recommender Engine, Pattern discovery, Auto Visualizations, Rapid Deployment, Data quality Reports, No-code model building, Instant Insights, Develop Data Summaries, and Build context of Data.",
+    "unique_selling_points": "Simple Chat Interface for data analytics, democratizes AI & data, provides context-aware insights, and minimizes bottlenecks.",
+    "technology_stack": "Agentic AI for Data Analytics",
+    "user_experience_overview": "A simple chat interface to interact with data and access various analytical functionalities.",
+    "roadmap_or_milestones": "",
+    "screenshots_or_visuals": ""
+  },
+  "business_model": {
+    "revenue_streams": "",
+    "pricing_strategy": "",
+    "customer_lifetime_value": "",
+    "customer_acquisition_cost": "",
+    "repeat_purchase_factors": ""
+  },
+  "traction_and_validation": {
+    "user_or_customer_growth": "First version of the product deployment, taking signups and interest from customers by 2024.",
+    "revenue_growth": "",
+    "active_users_metrics": "",
+    "partnerships": "",
+    "notable_clients": "",
+    "testimonials_or_case_studies": "",
+    "press_mentions": ""
+  },
+  "go_to_market_strategy": {
+    "marketing_channels": "",
+    "sales_process": "",
+    "partnerships_distributors": "",
+    "growth_plan": "Full time working on the startup - building the product, started hiring teams by 2023."
+  },
+  "competition": {
+    "competitor_list": "",
+    "competitive_analysis_table": "",
+    "barriers_to_entry": "",
+    "startup_advantages": "Cohesive team with over 8 years experience, first-hand experience of the problem, combining data & domain expertise, and 10 patents combined from a team member."
+  },
+  "team": {
+    "founders": [
+      {
+        "name": "Divya Krishna R",
+        "title": "Lead data scientist @ Bosch",
+        "bio": "B.E Graduation (2012), M.E. @ Frankfurt university – Information technology (2014), Lead data scientist @ Bosch (2019), Teamed up with Suma to develop data driven applications, Developed multiple solutions together, own 10 PATENTS combined. Product Idea development (2021), Market research and idea validation (2021), POC development & validation, company registration, Multiple project development & implementation (2022), Full time working on the startup – Building the product, started hiring teams (2023), First version of the product deployment, taking signups and interest from customers (2024).",
+        "linkedin": ""
+      },
+      {
+        "name": "Sumalata Kamat",
+        "title": "Content manager @ Byjus",
+        "bio": "B.E Graduation (2012), System engineer @Bosch (2017), Content manager @ Byjus (2019).",
+        "linkedin": ""
+      },
+      {
+        "name": "Karthik. C",
+        "title": "Founder, Avid Athletes – Sports-Tech startup",
+        "bio": "SDE @ IBM (2014), Asst manager @ PolyOptics, Germany. Teaching asst @ HSRW (2017), Founded Avid Athletes – Sports-Tech startup (2019).",
+        "linkedin": ""
+      }
+    ],
+    "key_team_members": [],
+    "advisors": []
+  },
+  "financials": {
+    "historical_financials": "",
+    "projections": {
+      "next_year": "",
+      "three_year": "",
+      "five_year": ""
+    },
+    "key_metrics": "",
+    "unit_economics": "",
+    "break_even_analysis": "",
+    "funding_history": "",
+    "capitalization_table": ""
+  },
+  "funding": {
+    "amount_seeking": "",
+    "use_of_funds": "",
+    "current_investors": "",
+    "deal_terms": ""
+  },
+  "vision_and_impact": {
+    "future_plans": "",
+    "growth_opportunity": "",
+    "exit_strategy": "",
+    "societal_impact": ""
+  },
+  "appendix": {
+    "additional_charts_or_graphs": "",
+    "market_research_references": "",
+    "patents_or_IP": "Divya Krishna R owns 10 PATENTS combined.",
+    "FAQs": ""
+  },
+  "other_information": {
+    "team_expertise": "Cohesive team, together for over 8 years, First hand experience of the problem, Combining Data & Domain expertise.",
+    "central_data_team_roles": "Data Scientist, Data Analyst, ML Engineer, Data engineer, Dev Ops Engineer, BI Expert, Cloud Engineer"
+  }
+}
+```

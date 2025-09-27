@@ -10,9 +10,7 @@ This script tests the complete master orchestrator system to verify:
 """
 
 import asyncio
-import json
 import logging
-import os
 import sys
 import uuid
 from pathlib import Path
@@ -20,15 +18,14 @@ from pathlib import Path
 # Add the project root to Python path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from google.adk.sessions import InMemorySessionService
 from google.adk.artifacts import InMemoryArtifactService
 from google.adk.runners import Runner
+from google.adk.sessions import InMemorySessionService
 from google.genai import types
 from google.genai.types import Content
 
-from workflow.master.agent import root_agent
-from utils.configs import config
 from utils.logging_config import setup_logging
+from workflow.master.agent import root_agent
 
 # Setup logging
 setup_logging()
@@ -49,7 +46,7 @@ async def test_master_orchestrator():
             agent=root_agent,
             app_name="test-master-orchestrator",
             session_service=session_service,
-            artifact_service=artifact_service
+            artifact_service=artifact_service,
         )
 
         # Create a test session
@@ -57,9 +54,7 @@ async def test_master_orchestrator():
         user_id = "test_user"
 
         session = await session_service.create_session(
-            app_name="test-master-orchestrator",
-            user_id=user_id,
-            session_id=session_id
+            app_name="test-master-orchestrator", user_id=user_id, session_id=session_id
         )
 
         # Test query for complete startup evaluation
@@ -81,16 +76,18 @@ async def test_master_orchestrator():
             logger.info(f"📊 Event {event_count}: {type(event).__name__}")
 
             # Check if this is a completion event or final event
-            if hasattr(event, 'type') and event.type == 'completion':
+            if hasattr(event, "type") and event.type == "completion":
                 execution_completed = True
                 logger.info("✅ Execution completion event detected")
 
-            if hasattr(event, 'error') and event.error:
+            if hasattr(event, "error") and event.error:
                 logger.error(f"❌ Error event: {event.error}")
                 return False
 
         # Check that execution completed
-        if not execution_completed and event_count > 10:  # Assume completion if many events processed
+        if (
+            not execution_completed and event_count > 10
+        ):  # Assume completion if many events processed
             logger.info("✅ Execution completed (inferred from event count)")
             execution_completed = True
 
@@ -102,7 +99,9 @@ async def test_master_orchestrator():
         logger.info("🔍 Checking for saved files in sessions directory...")
 
         # Get session directory path
-        session_dir = Path("sessions") / f"{user_id}_{session_id}_test-master-orchestrator"
+        session_dir = (
+            Path("sessions") / f"{user_id}_{session_id}_test-master-orchestrator"
+        )
         if session_dir.exists():
             logger.info(f"✅ Session directory created: {session_dir}")
 
@@ -135,7 +134,9 @@ async def test_master_orchestrator():
                     logger.warning(f"⚠️ Missing expected file: {expected_file}")
 
             # Check that we have the main output files
-            main_files = [f for f in found_files if 'all_states_report' in f or 'process_pdf' in f]
+            main_files = [
+                f for f in found_files if "all_states_report" in f or "process_pdf" in f
+            ]
             if main_files:
                 logger.info(f"✅ Main orchestrator files saved: {main_files}")
             else:
@@ -143,9 +144,13 @@ async def test_master_orchestrator():
 
             # Verify that at least some files were saved
             if len(found_files) >= 3:
-                logger.info(f"✅ File saving working correctly - {len(found_files)} files saved")
+                logger.info(
+                    f"✅ File saving working correctly - {len(found_files)} files saved"
+                )
             else:
-                logger.warning(f"⚠️ Only {len(found_files)} files saved, expected at least 3")
+                logger.warning(
+                    f"⚠️ Only {len(found_files)} files saved, expected at least 3"
+                )
 
         else:
             logger.error(f"❌ Session directory not created: {session_dir}")
@@ -170,6 +175,7 @@ async def test_master_orchestrator():
     except Exception as e:
         logger.error(f"❌ Test failed with exception: {e}")
         import traceback
+
         logger.error(f"📋 Traceback: {traceback.format_exc()}")
         return False
 

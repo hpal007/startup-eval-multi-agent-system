@@ -20,7 +20,6 @@ from tools.search_tool import (
     concise_google_search,
     search_indian_news,
 )
-
 from utils.configs import config
 
 from . import prompt

@@ -16,7 +16,6 @@ from tools.report_synthesis_tools import (
     identify_red_flags,
     synthesize_analysis_results,
 )
-
 from utils.configs import config
 
 from . import prompt

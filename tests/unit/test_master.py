@@ -1,5 +1,6 @@
 import asyncio
 import logging
+
 from google.adk.artifacts import InMemoryArtifactService
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
@@ -9,6 +10,7 @@ from workflow.master.agent import root_agent
 
 # Enable debug logging
 logging.basicConfig(level=logging.DEBUG)
+
 
 async def test_master_agent():
     """Test the master agent to see if it generates files for all sub-orchestrators."""
@@ -55,6 +57,7 @@ async def test_master_agent():
             break
 
     print("Master agent execution completed")
+
 
 if __name__ == "__main__":
     asyncio.run(test_master_agent())
